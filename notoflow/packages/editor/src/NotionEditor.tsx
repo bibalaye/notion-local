@@ -1,10 +1,47 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { EditorContent, useEditor } from "@tiptap/react";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { EditorContent, useEditor, BubbleMenu } from "@tiptap/react";
 import { getExtensions } from "./extensions/index";
-import { Sparkles } from "lucide-react";
+import {
+  Sparkles,
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  Strikethrough,
+  Code,
+  ChevronDown,
+  Palette,
+  Copy,
+  Trash,
+} from "lucide-react";
 import "./styles.css";
+
+const colors = [
+  { label: "Défaut", value: "inherit", color: "text-foreground" },
+  { label: "Gris", value: "#8b949e", color: "text-[#8b949e]" },
+  { label: "Marron", value: "#9f6b53", color: "text-[#9f6b53]" },
+  { label: "Orange", value: "#d97706", color: "text-[#d97706]" },
+  { label: "Jaune", value: "#dfab01", color: "text-[#dfab01]" },
+  { label: "Vert", value: "#2ea043", color: "text-[#2ea043]" },
+  { label: "Bleu", value: "#58a6ff", color: "text-[#58a6ff]" },
+  { label: "Violet", value: "#bc8cff", color: "text-[#bc8cff]" },
+  { label: "Rose", value: "#ff7b72", color: "text-[#ff7b72]" },
+  { label: "Rouge", value: "#f85149", color: "text-[#f85149]" },
+];
+
+const highlights = [
+  { label: "Aucun", value: "", color: "bg-transparent border border-border" },
+  { label: "Gris", value: "#eff1f3", color: "bg-[#eff1f3] dark:bg-[#3c3f41]" },
+  { label: "Marron", value: "#f4eeee", color: "bg-[#f4eeee] dark:bg-[#432d26]" },
+  { label: "Orange", value: "#fbecdd", color: "bg-[#fbecdd] dark:bg-[#5c3b25]" },
+  { label: "Jaune", value: "#fbf3db", color: "bg-[#fbf3db] dark:bg-[#564b2a]" },
+  { label: "Vert", value: "#edf7ec", color: "bg-[#edf7ec] dark:bg-[#294a34]" },
+  { label: "Bleu", value: "#e7f3f8", color: "bg-[#e7f3f8] dark:bg-[#283d54]" },
+  { label: "Violet", value: "#f6f0fa", color: "bg-[#f6f0fa] dark:bg-[#492d58]" },
+  { label: "Rose", value: "#faf0f5", color: "bg-[#faf0f5] dark:bg-[#582c4d]" },
+  { label: "Rouge", value: "#fdebeb", color: "bg-[#fdebeb] dark:bg-[#582c2c]" },
+];
 
 export type NotionEditorProps = {
   initialContent?: unknown;
@@ -36,6 +73,9 @@ export function NotionEditor({
   const [cursorsCoords, setCursorsCoords] = useState<
     Record<string, { top: number; left: number; name: string; color: string }>
   >({});
+
+  // Floating selection bubble menu states
+  const [bubbleSubmenu, setBubbleSubmenu] = useState<"none" | "block" | "color">("none");
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -160,7 +200,7 @@ export function NotionEditor({
     editorProps: {
       attributes: {
         class:
-          "notion-editor prose prose-neutral dark:prose-invert max-w-none px-3 py-6 text-base leading-relaxed focus:outline-none min-h-[400px]",
+          "notion-editor max-w-none focus:outline-none min-h-[60vh] text-base leading-relaxed",
       },
       handleKeyDown: (view, event) => {
         const state = menuStateRef.current;
@@ -195,6 +235,9 @@ export function NotionEditor({
     onSelectionUpdate: ({ editor }) => {
       const { from } = editor.state.selection;
       
+      // Reset bubble submenu when selection changes
+      setBubbleSubmenu("none");
+
       // Cursor broadcast callback
       onCursorChange?.(from);
 
@@ -270,10 +313,266 @@ export function NotionEditor({
     }
   }, [editor, initialContent]);
 
+  const blockTypes = [
+    { label: "Texte", active: () => editor?.isActive("paragraph") ?? false, action: () => editor?.chain().focus().setParagraph().run(), icon: "✍️" },
+    { label: "Titre 1", active: () => editor?.isActive("heading", { level: 1 }) ?? false, action: () => editor?.chain().focus().toggleHeading({ level: 1 }).run(), icon: "❶" },
+    { label: "Titre 2", active: () => editor?.isActive("heading", { level: 2 }) ?? false, action: () => editor?.chain().focus().toggleHeading({ level: 2 }).run(), icon: "❷" },
+    { label: "Titre 3", active: () => editor?.isActive("heading", { level: 3 }) ?? false, action: () => editor?.chain().focus().toggleHeading({ level: 3 }).run(), icon: "❸" },
+    { label: "Liste à puces", active: () => editor?.isActive("bulletList") ?? false, action: () => editor?.chain().focus().toggleBulletList().run(), icon: "•" },
+    { label: "Liste numérotée", active: () => editor?.isActive("orderedList") ?? false, action: () => editor?.chain().focus().toggleOrderedList().run(), icon: "1." },
+    { label: "Liste de tâches", active: () => editor?.isActive("taskList") ?? false, action: () => editor?.chain().focus().toggleTaskList().run(), icon: "☑️" },
+    { label: "Citation", active: () => editor?.isActive("blockquote") ?? false, action: () => editor?.chain().focus().toggleBlockquote().run(), icon: "💬" },
+    { label: "Code", active: () => editor?.isActive("codeBlock") ?? false, action: () => editor?.chain().focus().toggleCodeBlock().run(), icon: "💻" },
+  ];
+
+  const getActiveBlockLabel = () => {
+    if (!editor) return "Texte";
+    const active = blockTypes.find((t) => t.active());
+    return active ? active.label : "Texte";
+  };
+
+  const duplicateBlock = () => {
+    if (!editor) return;
+    const { from, to } = editor.state.selection;
+    const selectedContent = editor.state.doc.slice(from, to).content;
+    if (selectedContent.size > 0) {
+      editor.chain().focus().insertContentAt(to, selectedContent.toJSON()).run();
+    }
+  };
+
+  const deleteSelection = () => {
+    if (!editor) return;
+    editor.chain().focus().deleteSelection().run();
+  };
+
+  const copyText = () => {
+    if (!editor) return;
+    const { from, to } = editor.state.selection;
+    const text = editor.state.doc.textBetween(from, to);
+    navigator.clipboard.writeText(text);
+  };
+
   if (!editor) return <div className="h-48 animate-pulse rounded-xl bg-muted/30 border border-border/50" />;
 
   return (
     <div ref={containerRef} className="relative w-full">
+      {editor && (
+        <BubbleMenu
+          editor={editor}
+          tippyOptions={{ duration: 100 }}
+          className="flex flex-col rounded-xl border border-border/80 bg-popover/95 p-1 shadow-2xl backdrop-blur-md max-w-sm"
+        >
+          {/* Main Toolbar */}
+          <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-none">
+            {/* Block Type Transform Selector */}
+            <button
+              type="button"
+              onClick={() => setBubbleSubmenu(bubbleSubmenu === "block" ? "none" : "block")}
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 ${
+                bubbleSubmenu === "block" ? "bg-accent text-accent-foreground" : "text-foreground/80"
+              }`}
+            >
+              <span>{getActiveBlockLabel()}</span>
+              <ChevronDown className="h-3 w-3 opacity-60" />
+            </button>
+
+            <div className="h-4 w-[1px] bg-border/80 mx-1 shrink-0" />
+
+            {/* Standard Formatting buttons */}
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              className={`p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 ${
+                editor.isActive("bold") ? "bg-accent text-accent-foreground" : "text-foreground/70"
+              }`}
+              title="Gras"
+            >
+              <Bold className="h-3.5 w-3.5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              className={`p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 ${
+                editor.isActive("italic") ? "bg-accent text-accent-foreground" : "text-foreground/70"
+              }`}
+              title="Italique"
+            >
+              <Italic className="h-3.5 w-3.5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().toggleUnderline().run()}
+              className={`p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 ${
+                editor.isActive("underline") ? "bg-accent text-accent-foreground" : "text-foreground/70"
+              }`}
+              title="Souligné"
+            >
+              <UnderlineIcon className="h-3.5 w-3.5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().toggleStrike().run()}
+              className={`p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 ${
+                editor.isActive("strike") ? "bg-accent text-accent-foreground" : "text-foreground/70"
+              }`}
+              title="Barré"
+            >
+              <Strikethrough className="h-3.5 w-3.5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().toggleCode().run()}
+              className={`p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 ${
+                editor.isActive("code") ? "bg-accent text-accent-foreground" : "text-foreground/70"
+              }`}
+              title="Code en ligne"
+            >
+              <Code className="h-3.5 w-3.5" />
+            </button>
+
+            <div className="h-4 w-[1px] bg-border/80 mx-1 shrink-0" />
+
+            {/* Color picker */}
+            <button
+              type="button"
+              onClick={() => setBubbleSubmenu(bubbleSubmenu === "color" ? "none" : "color")}
+              className={`p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 ${
+                bubbleSubmenu === "color" ? "bg-accent text-accent-foreground" : "text-foreground/70"
+              }`}
+              title="Couleur"
+            >
+              <Palette className="h-3.5 w-3.5" />
+            </button>
+
+            {/* AI Assistant selection command */}
+            <button
+              type="button"
+              onClick={() => {
+                if (onTriggerAI) onTriggerAI(editor);
+              }}
+              className="p-1.5 rounded-lg text-violet-600 dark:text-violet-400 hover:bg-violet-500/10 transition-colors shrink-0"
+              title="Demander à l'IA"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+            </button>
+
+            <div className="h-4 w-[1px] bg-border/80 mx-1 shrink-0" />
+
+            {/* Copy link / Duplicate / Delete */}
+            <button
+              type="button"
+              onClick={copyText}
+              className="p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 text-foreground/70"
+              title="Copier le texte"
+            >
+              <Copy className="h-3.5 w-3.5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={duplicateBlock}
+              className="p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 text-foreground/70"
+              title="Dupliquer"
+            >
+              <ChevronDown className="h-3.5 w-3.5 rotate-180" />
+            </button>
+
+            <button
+              type="button"
+              onClick={deleteSelection}
+              className="p-1.5 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0 text-foreground/70"
+              title="Supprimer"
+            >
+              <Trash className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          {/* Submenus Panels */}
+          {bubbleSubmenu === "block" && (
+            <div className="border-t border-border/40 mt-1 pt-1 max-h-[220px] overflow-y-auto w-full space-y-0.5 animate-fade-in">
+              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2.5 py-1">
+                Transformer en
+              </div>
+              {blockTypes.map((t) => (
+                <button
+                  key={t.label}
+                  type="button"
+                  onClick={() => {
+                    t.action();
+                    setBubbleSubmenu("none");
+                  }}
+                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-xs transition-colors ${
+                    t.active() ? "bg-accent text-accent-foreground font-semibold" : "hover:bg-accent/40 text-foreground/90"
+                  }`}
+                >
+                  <span className="text-sm shrink-0 w-4 text-center">{t.icon}</span>
+                  <span>{t.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {bubbleSubmenu === "color" && (
+            <div className="border-t border-border/40 mt-1 pt-1 max-h-[250px] overflow-y-auto w-full grid grid-cols-2 gap-2 p-2 animate-fade-in">
+              {/* Text color column */}
+              <div className="space-y-1">
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">
+                  Couleur du texte
+                </div>
+                {colors.map((c) => (
+                  <button
+                    key={c.label}
+                    type="button"
+                    onClick={() => {
+                      if (c.value === "inherit") {
+                        editor.chain().focus().unsetColor().run();
+                      } else {
+                        editor.chain().focus().setColor(c.value).run();
+                      }
+                      setBubbleSubmenu("none");
+                    }}
+                    className="w-full flex items-center gap-2 px-2 py-1 rounded-md text-left text-xs hover:bg-accent/50 text-foreground/90"
+                  >
+                    <span className={`w-3.5 h-3.5 rounded-full border border-border/40 flex items-center justify-center font-bold text-[9px] ${c.color}`}>
+                      A
+                    </span>
+                    <span>{c.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Background color column */}
+              <div className="space-y-1">
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">
+                  Surlignage
+                </div>
+                {highlights.map((h) => (
+                  <button
+                    key={h.label}
+                    type="button"
+                    onClick={() => {
+                      if (h.value === "") {
+                        editor.chain().focus().unsetHighlight().run();
+                      } else {
+                        editor.chain().focus().toggleHighlight({ color: h.value }).run();
+                      }
+                      setBubbleSubmenu("none");
+                    }}
+                    className="w-full flex items-center gap-2 px-2 py-1 rounded-md text-left text-xs hover:bg-accent/50 text-foreground/90"
+                  >
+                    <span className={`w-3.5 h-3.5 rounded border border-border/40 ${h.color}`} />
+                    <span>{h.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </BubbleMenu>
+      )}
       <EditorContent editor={editor} />
 
       {/* Floating Collaborative Cursors */}

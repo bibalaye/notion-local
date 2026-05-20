@@ -1,11 +1,291 @@
+/* ================================================================
+   Notion-style Editor – Content area styles
+   ================================================================ */
+
+/* ── Base container ──────────────────────────────────────────────── */
 .notion-editor {
-  min-height: 12rem;
+  min-height: 20rem;
+  caret-color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
 }
 
+/* ── Placeholder ─────────────────────────────────────────────────── */
+.notion-editor p.is-empty:first-child::before,
 .notion-editor p.is-editor-empty:first-child::before {
-  color: hsl(var(--muted-foreground));
+  color: hsl(var(--muted-foreground) / 0.4);
   content: attr(data-placeholder);
   float: left;
   height: 0;
   pointer-events: none;
+  font-style: normal;
+}
+
+/* ── Paragraphs ──────────────────────────────────────────────────── */
+.notion-editor p {
+  margin-top: 0;
+  margin-bottom: 2px;
+  line-height: 1.7;
+  font-size: 1rem;
+  color: hsl(var(--foreground));
+}
+
+/* ── Headings ────────────────────────────────────────────────────── */
+.notion-editor h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 1.5rem;
+  margin-bottom: 0.25rem;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.02em;
+}
+.notion-editor h2 {
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 1.25rem;
+  margin-bottom: 0.25rem;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.01em;
+}
+.notion-editor h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+  color: hsl(var(--foreground));
+}
+
+/* ── Bold & Italic ───────────────────────────────────────────────── */
+.notion-editor strong {
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+.notion-editor em {
+  font-style: italic;
+}
+
+/* ── Underline & Strikethrough ───────────────────────────────────── */
+.notion-editor u {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.notion-editor s {
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+/* ── Inline code ─────────────────────────────────────────────────── */
+.notion-editor code:not(pre code) {
+  font-family: "Fira Code", "Cascadia Code", "Menlo", monospace;
+  font-size: 0.85em;
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+  font-weight: 500;
+}
+
+/* ── Code blocks ─────────────────────────────────────────────────── */
+.notion-editor pre {
+  background: hsl(var(--muted));
+  border: 1px solid hsl(var(--border) / 0.6);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+  font-family: "Fira Code", "Cascadia Code", "Menlo", monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.notion-editor pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: hsl(var(--foreground));
+}
+
+/* ── Blockquote ──────────────────────────────────────────────────── */
+.notion-editor blockquote {
+  border-left: 3px solid hsl(var(--border));
+  padding-left: 1rem;
+  margin: 0.75rem 0;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+  font-size: 1rem;
+}
+
+/* ── Horizontal rule ─────────────────────────────────────────────── */
+.notion-editor hr {
+  border: none;
+  border-top: 1px solid hsl(var(--border) / 0.6);
+  margin: 1.5rem 0;
+}
+
+/* ── Lists ───────────────────────────────────────────────────────── */
+.notion-editor ul,
+.notion-editor ol {
+  padding-left: 1.5rem;
+  margin: 0.25rem 0;
+}
+.notion-editor li {
+  margin: 1px 0;
+  line-height: 1.7;
+}
+.notion-editor ul li::marker {
+  color: hsl(var(--muted-foreground));
+}
+.notion-editor ol li::marker {
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+}
+
+/* ── Task list ───────────────────────────────────────────────────── */
+.notion-editor ul[data-type="taskList"] {
+  padding-left: 0.25rem;
+  list-style: none;
+}
+.notion-editor ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 1px 0;
+}
+.notion-editor ul[data-type="taskList"] li > label {
+  display: flex;
+  align-items: center;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+.notion-editor ul[data-type="taskList"] li > label input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid hsl(var(--border));
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: transparent;
+  flex-shrink: 0;
+  position: relative;
+}
+.notion-editor ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
+  background: hsl(var(--foreground));
+  border-color: hsl(var(--foreground));
+}
+.notion-editor ul[data-type="taskList"] li > label input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  top: 1.5px;
+  left: 4px;
+  width: 4px;
+  height: 7px;
+  border: 2px solid hsl(var(--background));
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+.notion-editor ul[data-type="taskList"] li[data-checked="true"] > div {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+.notion-editor ul[data-type="taskList"] li > div {
+  flex: 1;
+  line-height: 1.7;
+}
+
+/* ── Tables ──────────────────────────────────────────────────────── */
+.notion-editor table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+}
+.notion-editor th,
+.notion-editor td {
+  border: 1px solid hsl(var(--border) / 0.7);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+  min-width: 100px;
+}
+.notion-editor th {
+  background: hsl(var(--muted));
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: hsl(var(--muted-foreground));
+}
+.notion-editor tr:hover td {
+  background: hsl(var(--accent) / 0.3);
+}
+.notion-editor .selectedCell {
+  background: hsl(var(--accent) / 0.6) !important;
+}
+
+/* ── Links ───────────────────────────────────────────────────────── */
+.notion-editor a {
+  color: hsl(var(--foreground));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: hsl(var(--muted-foreground) / 0.5);
+  transition: text-decoration-color 0.15s;
+}
+.notion-editor a:hover {
+  text-decoration-color: hsl(var(--foreground));
+}
+
+/* ── Highlight marks ─────────────────────────────────────────────── */
+.notion-editor mark {
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+/* ── YouTube embed ───────────────────────────────────────────────── */
+.notion-editor .youtube-embed {
+  margin: 1rem 0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.notion-editor iframe {
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+/* ── Drag handle placeholder ─────────────────────────────────────── */
+.notion-editor .is-empty::before {
+  pointer-events: none;
+  height: 0;
+  float: left;
+}
+
+/* ── Selection ───────────────────────────────────────────────────── */
+.notion-editor ::selection {
+  background: hsl(var(--primary) / 0.2);
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────── */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── BubbleMenu animation ────────────────────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.12s ease forwards;
 }

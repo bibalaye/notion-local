@@ -12,6 +12,8 @@ import TextAlign from "@tiptap/extension-text-align";
 import Underline from "@tiptap/extension-underline";
 import Youtube from "@tiptap/extension-youtube";
 import StarterKit from "@tiptap/starter-kit";
+import { TextStyle } from "@tiptap/extension-text-style";
+import { Color } from "@tiptap/extension-color";
 import DatabaseBlockNode from "./DatabaseBlockNode";
 
 export const getExtensions = (options?: { renderDatabase?: (id: string) => React.ReactNode }) => {
@@ -20,6 +22,8 @@ export const getExtensions = (options?: { renderDatabase?: (id: string) => React
       heading: { levels: [1, 2, 3, 4, 5, 6] },
     }),
     Placeholder.configure({ placeholder: "Tape '/' pour les commandes…" }),
+    TextStyle,
+    Color,
     Underline,
     Highlight.configure({ multicolor: true }),
     TextAlign.configure({ types: ["heading", "paragraph"] }),

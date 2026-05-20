@@ -77,31 +77,43 @@ export async function updatePage(
     position?: number;
   },
 ) {
-  const page = await db.page.findUnique({ where: { id: pageId } });
-  if (!page) throw new Error("Page introuvable.");
+  try {
+    const page = await db.page.findUnique({ where: { id: pageId } });
+    if (!page) throw new Error("Page introuvable.");
 
-  const { profile } = await verifyWorkspaceAccess(page.workspaceId, ["OWNER", "ADMIN", "EDITOR"]);
+    const { profile } = await verifyWorkspaceAccess(page.workspaceId, ["OWNER", "ADMIN", "EDITOR"]);
 
-  const updatedPage = await db.page.update({
-    where: { id: pageId },
-    data: {
-      ...data,
-      updatedAt: new Date(),
-    },
-  });
+    // Next.js 15 Client Reference Proxy serialization fix:
+    // Clone data to avoid proxy traversal errors when Prisma reads fields on the server.
+    const updateData: typeof data = { ...data };
+    if (data.content !== undefined) {
+      updateData.content = JSON.parse(JSON.stringify(data.content));
+    }
 
-  // If content changed, save a version history snapshot
-  if (data.content !== undefined) {
-    await db.pageVersion.create({
+    const updatedPage = await db.page.update({
+      where: { id: pageId },
       data: {
-        pageId,
-        content: data.content,
+        ...updateData,
+        updatedAt: new Date(),
       },
     });
-  }
 
-  revalidatePath("/app", "layout");
-  return updatedPage;
+    // If content changed, save a version history snapshot
+    if (data.content !== undefined) {
+      await db.pageVersion.create({
+        data: {
+          pageId,
+          content: updateData.content,
+        },
+      });
+    }
+
+    revalidatePath("/app", "layout");
+    return updatedPage;
+  } catch (error) {
+    console.error("Error in updatePage:", error);
+    throw error;
+  }
 }
 
 // Duplicate page and its nested child pages recursively

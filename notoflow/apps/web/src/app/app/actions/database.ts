@@ -49,7 +49,19 @@ export async function updateDatabase(databaseId: string, data: { name?: string; 
   const database = await db.database.findUnique({ where: { id: databaseId } });
   if (!database) throw new Error("Introuvable.");
   await verifyAccess(database.workspaceId, ["OWNER", "ADMIN", "EDITOR"]);
-  const updated = await db.database.update({ where: { id: databaseId }, data: { ...data, updatedAt: new Date() } });
+  
+  const updateData: typeof data = { ...data };
+  if (data.schema !== undefined) {
+    updateData.schema = JSON.parse(JSON.stringify(data.schema));
+  }
+  if (data.views !== undefined) {
+    updateData.views = JSON.parse(JSON.stringify(data.views));
+  }
+
+  const updated = await db.database.update({ 
+    where: { id: databaseId }, 
+    data: { ...updateData, updatedAt: new Date() } 
+  });
   revalidatePath("/app", "layout");
   return updated;
 }
@@ -59,8 +71,11 @@ export async function createDatabaseRow(databaseId: string, values?: Record<stri
   if (!database) throw new Error("Introuvable.");
   await verifyAccess(database.workspaceId, ["OWNER", "ADMIN", "EDITOR"]);
   const count = await db.databaseRow.count({ where: { databaseId } });
+  
+  const cleanValues = values ? JSON.parse(JSON.stringify(values)) : {};
+
   const row = await db.databaseRow.create({
-    data: { databaseId, values: (values || {}) as any, position: count },
+    data: { databaseId, values: cleanValues, position: count },
   });
   revalidatePath("/app", "layout");
   return row;
@@ -70,7 +85,13 @@ export async function updateDatabaseRow(rowId: string, values: Record<string, un
   const row = await db.databaseRow.findUnique({ where: { id: rowId }, include: { database: true } });
   if (!row) throw new Error("Ligne introuvable.");
   await verifyAccess(row.database.workspaceId, ["OWNER", "ADMIN", "EDITOR"]);
-  const updated = await db.databaseRow.update({ where: { id: rowId }, data: { values: values as any, updatedAt: new Date() } });
+  
+  const cleanValues = JSON.parse(JSON.stringify(values));
+
+  const updated = await db.databaseRow.update({ 
+    where: { id: rowId }, 
+    data: { values: cleanValues, updatedAt: new Date() } 
+  });
   revalidatePath("/app", "layout");
   return updated;
 }
