@@ -1,0 +1,62 @@
+.cmdk {
+  display: block;
+  width: 100%;
+  background: var(--card);
+  color: inherit;
+  border-radius: 0.5rem;
+}
+
+.cmdk-input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.cmdk-list {
+  width: 100%;
+}
+
+.cmdk-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.cmdk-item[aria-selected="true"],
+.cmdk-item[aria-current="true"] {
+  background: rgb(59 130 246 / 0.12);
+}
+
+.cmdk-item:hover {
+  background: rgb(59 130 246 / 0.08);
+}
+
+.cmdk-group-heading {
+  padding: 0.75rem 1rem 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.cmdk-empty {
+  padding: 1rem;
+  color: var(--muted-foreground);
+  text-align: center;
+}
+
+.cmdk-separator {
+  height: 1px;
+  width: 100%;
+  margin: 0.5rem 0;
+  background: var(--border);
+}

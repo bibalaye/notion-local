@@ -1,0 +1,9 @@
+{
+  "extends": "@notoflow/config/typescript/react-library.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "noEmit": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

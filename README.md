@@ -1,44 +1,17 @@
 # notion-local
 
-> Projet généré avec [create-multistack](https://github.com/votre-org/create-multistack)
+Ce dépôt contient le monorepo **NotoFlow** sous le dossier [`notoflow/`](./notoflow/README.md) : Next.js 15, TipTap, Prisma, realtime, IA, etc.
 
-## 🚀 Démarrage rapide
+## Démarrage (NotoFlow)
 
 ```bash
-# Installer les dépendances
+cd notoflow
 npm install
-
-# Lancer en développement
 npm run dev
 ```
 
-## 📋 Commandes disponibles
+Une ancienne app Next.js peut encore exister à la racine du dépôt ; le travail actif se fait dans **`notoflow/`**.
 
-| Commande | Description |
-|---|---|
-| `npm run dev` | Lance le serveur de développement |
-| `npm run build` | Build de production |
-| `npm run preview` | Prévisualise le build |
-| `npm run lint` | Analyse le code (ESLint) |
-| `npm run format` | Formate le code (Prettier) |
-| `npm test` | Lance les tests (Vitest) |
+## Licence
 
-## 🏗️ Structure du projet
-
-```
-src/
-├── components/     # Composants réutilisables
-├── pages/          # Pages de l'application
-├── assets/         # Images, polices, etc.
-└── __tests__/      # Tests unitaires
-```
-
-## 🛠️ Stack technique
-
-- **Framework**: nextjs-app
-- **TypeScript**: ✅ Oui
-- **Styling**: Tailwind CSS
-
-## 📄 Licence
-
-[MIT](./LICENSE)
+[Voir LICENSE](./LICENSE)

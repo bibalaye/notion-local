@@ -1,0 +1,350 @@
+// Prisma schema — NotoFlow (clone Notion production-ready)
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USERS & AUTH
+// ============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  avatarUrl     String?
+  passwordHash  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts          Account[]
+  memberships       WorkspaceMember[]
+  pages             Page[]              @relation("PageAuthor")
+  pageEditors       PageEditor[]
+  comments          Comment[]
+  reactions         Reaction[]
+  notifications     Notification[]
+  sessions          Session[]
+  realtimePresences RealtimePresence[]
+  favorites         Favorite[]
+  mentions          Mention[]           @relation("MentionedUser")
+
+  @@index([email])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refreshToken      String?
+  accessToken       String?
+  expiresAt         Int?
+  tokenType         String?
+  scope             String?
+  idToken           String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+// ============================================================================
+// WORKSPACES & TEAMS
+// ============================================================================
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logoUrl   String?
+  plan      Plan     @default(FREE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members         WorkspaceMember[]
+  pages           Page[]
+  databases       Database[]
+  invites         Invite[]
+  billingCustomer String?
+  billingSub      String?
+
+  @@index([slug])
+}
+
+enum Plan {
+  FREE
+  PRO
+  TEAM
+  ENTERPRISE
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+  GUEST
+}
+
+model WorkspaceMember {
+  id          String   @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        Role     @default(VIEWER)
+  joinedAt    DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@index([workspaceId])
+}
+
+model Invite {
+  id          String    @id @default(cuid())
+  email       String
+  workspaceId String
+  role        Role
+  token       String    @unique
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([email])
+}
+
+// ============================================================================
+// PAGES & DOCUMENTS
+// ============================================================================
+
+model Page {
+  id          String   @id @default(cuid())
+  workspaceId String
+  authorId    String
+  parentId    String?
+  title       String   @default("")
+  icon        String?
+  coverUrl    String?
+  content     Json     @default("[]")
+  summary     String?
+  isPublic    Boolean  @default(false)
+  isArchived  Boolean  @default(false)
+  isTemplate  Boolean  @default(false)
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  author    User          @relation("PageAuthor", fields: [authorId], references: [id])
+  parent    Page?         @relation("PageHierarchy", fields: [parentId], references: [id])
+  children  Page[]        @relation("PageHierarchy")
+  editors   PageEditor[]
+  comments  Comment[]
+  versions  PageVersion[]
+  databases Database[]
+  favorites Favorite[]
+  mentions  Mention[]
+
+  @@index([workspaceId])
+  @@index([parentId])
+  @@index([authorId])
+  @@index([updatedAt])
+}
+
+model PageEditor {
+  id     String   @id @default(cuid())
+  pageId String
+  userId String
+  role   PageRole @default(EDITOR)
+  page   Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([pageId, userId])
+}
+
+enum PageRole {
+  EDITOR
+  COMMENTER
+  VIEWER
+}
+
+model PageVersion {
+  id        String   @id @default(cuid())
+  pageId    String
+  content   Json
+  createdAt DateTime @default(now())
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId, createdAt])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  pageId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pageId])
+}
+
+// ============================================================================
+// COMMENTS & MENTIONS
+// ============================================================================
+
+model Comment {
+  id        String   @id @default(cuid())
+  pageId    String
+  userId    String
+  parentId  String?
+  content   String
+  resolved  Boolean  @default(false)
+  position  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  page      Page       @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id])
+  parent    Comment?   @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[]  @relation("CommentReplies")
+  reactions Reaction[]
+
+  @@index([pageId])
+  @@index([parentId])
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  commentId String
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([commentId, userId, emoji])
+}
+
+model Mention {
+  id        String   @id @default(cuid())
+  pageId    String
+  userId    String
+  position  Json
+  createdAt DateTime @default(now())
+
+  page          Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  mentionedUser User @relation("MentionedUser", fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ============================================================================
+// DATABASE ENGINE (type Notion)
+// ============================================================================
+
+model Database {
+  id          String   @id @default(cuid())
+  workspaceId String
+  pageId      String?
+  name        String
+  icon        String?
+  schema      Json
+  views       Json     @default("[]")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  page      Page?         @relation(fields: [pageId], references: [id])
+  rows      DatabaseRow[]
+
+  @@index([workspaceId])
+}
+
+model DatabaseRow {
+  id         String   @id @default(cuid())
+  databaseId String
+  values     Json
+  position   Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  database Database @relation(fields: [databaseId], references: [id], onDelete: Cascade)
+
+  @@index([databaseId])
+}
+
+// ============================================================================
+// REALTIME & NOTIFICATIONS
+// ============================================================================
+
+model RealtimePresence {
+  id       String   @id @default(cuid())
+  userId   String
+  roomId   String
+  cursor   Json?
+  lastSeen DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@index([lastSeen])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  content   String?
+  metadata  Json?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// AUDIT LOG
+// ============================================================================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String?
+  action      String
+  entityType  String
+  entityId    String
+  metadata    Json?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([workspaceId, createdAt])
+  @@index([entityType, entityId])
+}

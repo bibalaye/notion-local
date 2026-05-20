@@ -1,0 +1,21 @@
+{
+  "name": "@notoflow/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./eslint/next": "./eslint-next.mjs",
+    "./typescript/base.json": "./typescript/base.json",
+    "./typescript/react-library.json": "./typescript/react-library.json"
+  },
+  "scripts": {
+    "build": "node -e \"process.exit(0)\"",
+    "lint": "node -e \"process.exit(0)\"",
+    "test": "node -e \"process.exit(0)\"",
+    "typecheck": "node -e \"process.exit(0)\""
+  },
+  "devDependencies": {
+    "eslint": "^9.28.0",
+    "eslint-config-next": "^15.3.2"
+  }
+}

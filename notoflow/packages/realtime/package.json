@@ -1,0 +1,29 @@
+{
+  "name": "@notoflow/realtime",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "node -e \"process.exit(0)\"",
+    "lint": "eslint .",
+    "test": "node -e \"process.exit(0)\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "@supabase/supabase-js": "^2.49.8"
+  },
+  "peerDependenciesMeta": {
+    "@supabase/supabase-js": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@notoflow/config": "workspace:*",
+    "@supabase/supabase-js": "^2.49.8",
+    "eslint": "^9.28.0",
+    "typescript": "^5.8.3"
+  }
+}

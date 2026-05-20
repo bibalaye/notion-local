@@ -1,0 +1,26 @@
+{
+  "name": "notoflow",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "typecheck": "turbo typecheck",
+    "format": "prettier -w .",
+    "format:check": "prettier -c .",
+    "db:generate": "dotenv -e .env.local -- pnpm --filter @notoflow/database prisma:generate",
+    "db:push": "dotenv -e .env.local -- pnpm --filter @notoflow/database prisma:push",
+    "db:seed": "dotenv -e .env.local -- pnpm --filter @notoflow/database seed"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^11.0.0",
+    "prettier": "^3.5.3",
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

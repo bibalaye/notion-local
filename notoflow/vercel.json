@@ -1,0 +1,6 @@
+{
+  "buildCommand": "pnpm turbo build --filter=@notoflow/web",
+  "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "regions": ["cdg1"]
+}
