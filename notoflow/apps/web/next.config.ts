@@ -6,8 +6,10 @@ const monorepoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  output: "standalone",
-  outputFileTracingRoot: monorepoRoot,
+  // Standalone = Docker/self-host. Sur Vercel, laisser le mode par défaut.
+  ...(process.env.VERCEL
+    ? { outputFileTracingRoot: monorepoRoot }
+    : { output: "standalone", outputFileTracingRoot: monorepoRoot }),
   transpilePackages: [
     "@notoflow/ui",
     "@notoflow/editor",
