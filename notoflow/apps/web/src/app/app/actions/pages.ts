@@ -2,6 +2,7 @@
 
 import { db } from "@notoflow/database";
 import { getOrCreateProfile } from "@/lib/supabase/auth-helper";
+import { PAGE_TEMPLATES } from "@/lib/templates/page-templates";
 import { revalidatePath } from "next/cache";
 
 async function verifyWorkspaceAccess(workspaceId: string, allowedRoles: string[] = ["OWNER", "ADMIN", "EDITOR", "VIEWER", "GUEST"]) {
@@ -43,6 +44,26 @@ export async function createPage(workspaceId: string, parentId?: string | null) 
       parentId: parentId || null,
       title: "Sans titre",
       content: [] as any,
+    },
+  });
+
+  revalidatePath("/app", "layout");
+  return page;
+}
+
+export async function createPageFromTemplate(workspaceId: string, templateId: string) {
+  const template = PAGE_TEMPLATES.find((item) => item.id === templateId);
+  if (!template) throw new Error("Template introuvable.");
+
+  const { profile } = await verifyWorkspaceAccess(workspaceId, ["OWNER", "ADMIN", "EDITOR"]);
+
+  const page = await db.page.create({
+    data: {
+      workspaceId,
+      authorId: profile.id,
+      title: template.title,
+      icon: template.icon,
+      content: template.content as any,
     },
   });
 
@@ -98,17 +119,30 @@ export async function updatePage(
       },
     });
 
-    // If content changed, save a version history snapshot
+    // If content changed, save a throttled version history snapshot.
     if (data.content !== undefined) {
-      await db.pageVersion.create({
-        data: {
+      const recentVersion = await db.pageVersion.findFirst({
+        where: {
           pageId,
-          content: updateData.content,
+          createdAt: {
+            gte: new Date(Date.now() - 2 * 60 * 1000),
+          },
         },
+        orderBy: { createdAt: "desc" },
       });
+      if (!recentVersion) {
+        await db.pageVersion.create({
+          data: {
+            pageId,
+            content: updateData.content,
+          },
+        });
+      }
     }
 
-    revalidatePath("/app", "layout");
+    if (data.title !== undefined || data.icon !== undefined || data.coverUrl !== undefined || data.isPublic !== undefined || data.position !== undefined) {
+      revalidatePath("/app", "layout");
+    }
     return updatedPage;
   } catch (error) {
     console.error("Error in updatePage:", error);

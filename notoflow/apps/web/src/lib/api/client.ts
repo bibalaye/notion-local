@@ -3,6 +3,7 @@ import { getWorkspaces, createWorkspace, getWorkspace, addWorkspaceMember } from
 import {
   getWorkspacePages,
   createPage,
+  createPageFromTemplate,
   getPage,
   updatePage,
   duplicatePage,
@@ -53,6 +54,19 @@ export const api = {
         }
       }
       return createPage(wsId, parentId);
+    },
+    createFromTemplate: async (templateId: string) => {
+      let wsId = useWorkspaceStore.getState().activeWorkspaceId;
+      if (!wsId) {
+        const list = await getWorkspaces();
+        if (list.length > 0) {
+          wsId = list[0].id;
+          useWorkspaceStore.getState().setActiveWorkspaceId(wsId);
+        } else {
+          throw new Error("Aucun espace de travail actif.");
+        }
+      }
+      return createPageFromTemplate(wsId, templateId);
     },
     get: getPage,
     update: updatePage,

@@ -25,6 +25,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -54,7 +55,7 @@ interface PageEditorClientProps {
     email: string;
     name: string | null;
     avatarUrl: string | null;
-  };
+  } | null;
 }
 
 const CURSOR_COLORS = [
@@ -77,7 +78,8 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
   const [coverUrl, setCoverUrl] = useState<string | null>(page.coverUrl);
   const [isPublic, setIsPublic] = useState(page.isPublic);
   const [isFav, setIsFav] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "pending" | "saving" | "saved" | "error">("idle");
+  const isReadOnly = !currentUser;
 
   // Floating controls popovers
   const [showIconPicker, setShowIconPicker] = useState(false);
@@ -103,12 +105,14 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
       supabaseUrl,
       supabaseKey,
       page.id,
-      {
-        id: currentUser.id,
-        name: currentUser.name || currentUser.email,
-        avatarUrl: currentUser.avatarUrl,
-        color: colorRef.current,
-      },
+      currentUser
+        ? {
+            id: currentUser.id,
+            name: currentUser.name || currentUser.email,
+            avatarUrl: currentUser.avatarUrl,
+            color: colorRef.current,
+          }
+        : null,
       () => {
         // Doc update refetch callback
         toast.info("Le document a été mis à jour par un autre utilisateur.");
@@ -118,63 +122,118 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
 
   // Debounced auto-save logic
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const savedStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingSaveRef = useRef<Parameters<typeof updatePage>[1] | null>(null);
+  const isSavingRef = useRef(false);
+  const lastSavedTitleRef = useRef(page.title);
+  const lastSavedContentRef = useRef(JSON.stringify(page.content ?? null));
+
+  const queueSave = useCallback((updatedFields: Parameters<typeof updatePage>[1]) => {
+    pendingSaveRef.current = {
+      ...(pendingSaveRef.current ?? {}),
+      ...updatedFields,
+    };
+  }, []);
+
+  const flushSave = useCallback(async (): Promise<boolean> => {
+    if (isReadOnly || isSavingRef.current || !pendingSaveRef.current) return false;
+
+    const payload = pendingSaveRef.current;
+    pendingSaveRef.current = null;
+    isSavingRef.current = true;
+    setSaveStatus("saving");
+
+    try {
+      await updatePage(page.id, payload);
+      if (payload.title !== undefined) lastSavedTitleRef.current = payload.title;
+      if (payload.content !== undefined) lastSavedContentRef.current = JSON.stringify(payload.content);
+      broadcastDocUpdate();
+      setSaveStatus("saved");
+      if (savedStatusTimeoutRef.current) clearTimeout(savedStatusTimeoutRef.current);
+      savedStatusTimeoutRef.current = setTimeout(() => setSaveStatus("idle"), 1400);
+      return true;
+    } catch (err: any) {
+      pendingSaveRef.current = {
+        ...payload,
+        ...(pendingSaveRef.current ?? {}),
+      };
+      setSaveStatus("error");
+      toast.error("Erreur lors de la sauvegarde. Nouvelle tentative au prochain changement.");
+      return false;
+    } finally {
+      isSavingRef.current = false;
+      if (pendingSaveRef.current) {
+        saveTimeoutRef.current = setTimeout(() => {
+          void flushSave();
+        }, 300);
+      }
+    }
+  }, [broadcastDocUpdate, isReadOnly, page.id]);
 
   const triggerSave = useCallback(
     async (updatedFields: Parameters<typeof updatePage>[1]) => {
-      setSaving(true);
-      try {
-        await updatePage(page.id, updatedFields);
-        broadcastDocUpdate();
-      } catch (err: any) {
-        toast.error("Erreur lors de la sauvegarde.");
-      } finally {
-        setSaving(false);
-      }
+      if (isReadOnly) return false;
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      queueSave(updatedFields);
+      return flushSave();
     },
-    [page.id, broadcastDocUpdate],
+    [flushSave, isReadOnly, queueSave],
   );
 
   const debouncedSave = useCallback(
-    (updatedFields: Parameters<typeof updatePage>[1]) => {
+    (updatedFields: Parameters<typeof updatePage>[1], delay = 3000) => {
+      if (isReadOnly) return;
+      queueSave(updatedFields);
+      setSaveStatus("pending");
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
       saveTimeoutRef.current = setTimeout(() => {
-        triggerSave(updatedFields);
-      }, 1500);
+        void flushSave();
+      }, delay);
     },
-    [triggerSave],
+    [flushSave, isReadOnly, queueSave],
   );
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setTitle(val);
-    debouncedSave({ title: val });
+    if (val !== lastSavedTitleRef.current) debouncedSave({ title: val }, 900);
+  };
+
+  const handleEditorChange = (json: unknown) => {
+    const nextContent = JSON.stringify(json);
+    if (nextContent !== lastSavedContentRef.current) debouncedSave({ content: json }, 3500);
   };
 
   const handleSelectCover = (url: string) => {
+    if (isReadOnly) return;
     setCoverUrl(url);
     triggerSave({ coverUrl: url });
     setShowCoverPicker(false);
   };
 
   const handleRemoveCover = () => {
+    if (isReadOnly) return;
     setCoverUrl(null);
     triggerSave({ coverUrl: null });
     setShowCoverPicker(false);
   };
 
   const handleSelectIcon = (selectedEmoji: string) => {
+    if (isReadOnly) return;
     setIcon(selectedEmoji);
     triggerSave({ icon: selectedEmoji });
     setShowIconPicker(false);
   };
 
   const handleRemoveIcon = () => {
+    if (isReadOnly) return;
     setIcon(null);
     triggerSave({ icon: null });
     setShowIconPicker(false);
   };
 
   const handleToggleFav = async () => {
+    if (isReadOnly) return;
     try {
       const favState = await toggleFavorite(page.id);
       setIsFav(favState);
@@ -185,13 +244,19 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
   };
 
   const handleTogglePublic = async () => {
+    if (isReadOnly) return;
     const nextState = !isPublic;
     setIsPublic(nextState);
-    await triggerSave({ isPublic: nextState });
+    const saved = await triggerSave({ isPublic: nextState });
+    if (!saved) {
+      setIsPublic(!nextState);
+      return;
+    }
     toast.success(nextState ? "Document public" : "Document privé");
   };
 
   const handleDuplicate = async () => {
+    if (isReadOnly) return;
     try {
       const dup = await duplicatePage(page.id);
       toast.success("Document dupliqué !");
@@ -202,6 +267,7 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
   };
 
   const handleArchive = async () => {
+    if (isReadOnly) return;
     try {
       await archivePage(page.id);
       toast.success("Page envoyée à la corbeille");
@@ -210,6 +276,13 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
       toast.error("Erreur d'archivage");
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      if (savedStatusTimeoutRef.current) clearTimeout(savedStatusTimeoutRef.current);
+    };
+  }, []);
 
   // AI Prompt stream function
   const handleAiAction = async (type: string, options?: { lang?: string }) => {
@@ -280,9 +353,17 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
               {icon && <span className="shrink-0">{icon}</span>}
               <span className="truncate font-semibold">{title || "Sans titre"}</span>
             </div>
-            {saving && (
-              <span className="text-[10px] bg-accent/60 text-muted-foreground px-1.5 py-0.5 rounded font-semibold ml-2 animate-pulse shrink-0">
-                Sauvegarde...
+            {saveStatus !== "idle" && (
+              <span className="ml-2 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                {saveStatus === "pending" && "Modifications en attente"}
+                {saveStatus === "saving" && "Sauvegarde..."}
+                {saveStatus === "saved" && "Enregistre"}
+                {saveStatus === "error" && "Non sauvegarde"}
+              </span>
+            )}
+            {isReadOnly && (
+              <span className="ml-2 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                Lecture seule
               </span>
             )}
           </div>
@@ -303,10 +384,17 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
               ))}
             </div>
 
+            {isReadOnly && (
+              <Button size="sm" variant="outline" className="h-8 text-xs" asChild>
+                <Link href={`/login?redirect=/app/page/${page.id}`}>Se connecter</Link>
+              </Button>
+            )}
+
             {/* AI Assistant button */}
             <Button
               size="sm"
               variant="outline"
+              disabled={isReadOnly}
               onClick={() => setIsAiOpen(!isAiOpen)}
               className="h-8 gap-1.5 border-violet-500/30 bg-violet-500/5 hover:bg-violet-500/10 text-violet-600 dark:text-violet-400 font-semibold"
             >
@@ -319,6 +407,7 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
               size="sm"
               variant="ghost"
               className="h-8 gap-1.5 text-xs"
+              disabled={isReadOnly}
               onClick={handleTogglePublic}
             >
               {isPublic ? (
@@ -339,10 +428,27 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
               size="icon"
               variant="ghost"
               className={`h-8 w-8 ${isFav ? "text-amber-500 hover:text-amber-600" : "text-muted-foreground"}`}
+              disabled={isReadOnly}
               onClick={handleToggleFav}
             >
               <Star className="h-4 w-4 fill-current" />
             </Button>
+
+            {isPublic && (
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  const publicUrl = `${window.location.origin}/p/${page.id}`;
+                  void navigator.clipboard.writeText(publicUrl);
+                  toast.success("Lien public copie");
+                }}
+                title="Copier le lien public"
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
+            )}
 
             {/* Actions MenuDropdown */}
             <div className="relative">
@@ -350,6 +456,7 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
                 size="icon"
                 variant="ghost"
                 className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                disabled={isReadOnly}
                 onClick={() => setShowMoreMenu(!showMoreMenu)}
                 title="Plus d'actions"
               >
@@ -576,6 +683,8 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
             <input
               value={title}
               onChange={handleTitleChange}
+              onBlur={() => void flushSave()}
+              readOnly={isReadOnly}
               className="text-4xl font-bold font-sans tracking-tight bg-transparent border-none p-0 focus:outline-none focus:ring-0 w-full placeholder:text-muted-foreground/20 text-foreground mb-6"
               placeholder="Sans titre"
             />
@@ -583,11 +692,14 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
 
           <NotionEditor
             initialContent={page.content}
-            onChange={(json) => debouncedSave({ content: json })}
+            onChange={handleEditorChange}
+            readOnly={isReadOnly}
             renderDatabase={(dbId) => <DatabaseView databaseId={dbId} />}
             onCursorChange={(pos) => broadcastCursorMove(pos)}
             collaborativeCursors={collaborativeCursors}
-            onTriggerAI={() => setIsAiOpen(true)}
+            onTriggerAI={() => {
+              if (!isReadOnly) setIsAiOpen(true);
+            }}
           />
         </div>
       </div>
