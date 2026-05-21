@@ -66,6 +66,7 @@ coverage
 prisma/migrations/dev.db
 prisma/*.db
 prisma/*.sqlite
+/packages/database/src/generated/
 
 # Package manager lock files (optional, depending on preference)
 # yarn.lock
