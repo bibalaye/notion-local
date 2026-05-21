@@ -9,6 +9,8 @@ export type AuthActionState = { error?: string };
 
 import { getOrCreateProfile } from "@/lib/supabase/auth-helper";
 
+const SUPABASE_CONFIG_ERROR = "Configuration Supabase manquante.";
+
 const signupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
@@ -27,6 +29,7 @@ export async function signup(
   if (!parsed.success) return { error: "Données invalides" };
 
   const supabase = await createClient();
+  if (!supabase) return { error: SUPABASE_CONFIG_ERROR };
   const { error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
@@ -58,6 +61,7 @@ export async function login(
   if (!parsed.success) return { error: "Données invalides" };
 
   const supabase = await createClient();
+  if (!supabase) return { error: SUPABASE_CONFIG_ERROR };
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) return { error: error.message };
@@ -71,6 +75,7 @@ export async function login(
 
 export async function signInWith(provider: "google" | "github") {
   const supabase = await createClient();
+  if (!supabase) return { error: SUPABASE_CONFIG_ERROR };
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
@@ -89,8 +94,9 @@ export async function loginWithMagicLink(
   if (!email) return { error: "Email requis" };
 
   const supabase = await createClient();
+  if (!supabase) return { error: SUPABASE_CONFIG_ERROR };
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  
+
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
@@ -104,6 +110,7 @@ export async function loginWithMagicLink(
 
 export async function signOut() {
   const supabase = await createClient();
+  if (!supabase) redirect("/login");
   await supabase.auth.signOut();
   redirect("/login");
 }

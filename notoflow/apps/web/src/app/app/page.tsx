@@ -43,7 +43,7 @@ export default async function AppHomePage() {
             <Sparkles className="h-3 w-3" /> Espace de travail actif : {workspace?.name || "NotoFlow"}
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight">
-            Bonjour, {profile?.name || profile?.email.split("@")[0]} !
+            Bonjour, {profile?.name || profile?.email?.split("@")[0] || "utilisateur"} !
           </h1>
           <p className="text-sm text-muted-foreground leading-normal">
             Bienvenue sur votre espace de productivité. Créez des notes, organisez des bases de données ou utilisez l&apos;intelligence artificielle.

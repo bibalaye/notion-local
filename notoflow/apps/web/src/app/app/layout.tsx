@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import { CommandPalette } from "@/components/search/CommandPalette";
