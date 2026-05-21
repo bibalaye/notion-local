@@ -6,7 +6,8 @@
   "exports": {
     "./eslint/next": "./eslint-next.mjs",
     "./typescript/base.json": "./typescript/base.json",
-    "./typescript/react-library.json": "./typescript/react-library.json"
+    "./typescript/react-library.json": "./typescript/react-library.json",
+    "./typescript/node.json": "./typescript/node.json"
   },
   "scripts": {
     "build": "node -e \"process.exit(0)\"",

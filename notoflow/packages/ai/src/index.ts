@@ -1,3 +1,7 @@
+type MistralChatResponse = {
+  choices?: Array<{ message?: { content?: string } }>;
+};
+
 export async function* streamCompletion(prompt: string, systemPrompt?: string) {
   const apiKey = process.env.MISTRAL_API_KEY;
   if (!apiKey) {
@@ -98,8 +102,7 @@ export async function generateText(prompt: string, systemPrompt?: string) {
   }
 
   try {
-    const data = await response.json();
-    // Format standard OpenAI/Mistral
+    const data = (await response.json()) as MistralChatResponse;
     return data.choices?.[0]?.message?.content || JSON.stringify(data);
   } catch (e) {
     return await response.text();

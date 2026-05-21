@@ -25,7 +25,7 @@ export class PresenceChannel {
     this.channel
       .on("presence", { event: "sync" }, () => {
         const state = this.channel?.presenceState() ?? {};
-        const users = Object.values(state).flat() as PresenceUser[];
+        const users = Object.values(state).flat() as unknown as PresenceUser[];
         onPresence(users);
       })
       .subscribe(async (status) => {
