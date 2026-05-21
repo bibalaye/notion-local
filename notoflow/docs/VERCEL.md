@@ -4,12 +4,15 @@
 
 | Paramètre | Valeur |
 |-----------|--------|
-| **Root Directory** | `notoflow/apps/web` si le repo Git est `notion-local`, sinon `apps/web` |
-| **Framework Preset** | Next.js |
-| **Output Directory** | *(laisser vide — ne pas mettre `public`)* |
-| **Install Command** | *(vide — utilise `apps/web/vercel.json`)* |
-| **Build Command** | *(vide — utilise `apps/web/vercel.json`)* |
-| **Include source files outside Root Directory** | Activé |
+| **Root Directory** | `notoflow` (si repo = `notion-local`) ou `.` (si repo = `notoflow`) |
+| **Framework Preset** | Next.js *(ou laisser vide : `notoflow/vercel.json` force Next.js)* |
+| **Output Directory** | **VIDE** — si tu vois `public`, supprime-le et désactive l’override |
+| **Install Command** | vide *(utilise `notoflow/vercel.json`)* |
+| **Build Command** | vide *(utilise `notoflow/vercel.json`)* |
+| **Include source files outside Root Directory** | Activé si Root Directory = `apps/web` |
+
+> Le fichier `notoflow/vercel.json` à la racine du monorepo est lu par Vercel.  
+> `apps/web/vercel.json` n’est lu **que** si Root Directory = `apps/web`.
 
 ## Variables d'environnement (Production)
 
@@ -35,5 +38,5 @@ Ne pas lancer `db:push` / `db:seed` dans la commande de build Vercel.
 | Message | Cause | Solution |
 |---------|--------|----------|
 | `No Next.js version detected` | Root Directory = racine monorepo | Mettre `notoflow/apps/web` |
-| `No Output Directory named "public"` | Output Directory = `public` ou mauvaise racine | Vider Output Directory + bon Root Directory |
+| `No Output Directory named "public"` | Output Directory = `public` dans le dashboard | **Settings → Build → Output Directory : effacer `public`** puis redeploy |
 | `NEXT_PUBLIC_SUPABASE_* manquants` | Pré-rendu sans env | Ajouter les variables sur Vercel |
