@@ -146,7 +146,7 @@ export async function updatePage(
 
     if (data.content !== undefined) {
       const parsedContent = typeof data.content === "string" ? JSON.parse(data.content) : JSON.parse(JSON.stringify(data.content));
-      updateData.content = normalizePageContent(parsedContent) as Prisma.InputJsonValue;
+      updateData.content = normalizePageContent(parsedContent);
     }
 
     const updatedPage = await db.page.update({

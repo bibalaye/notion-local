@@ -96,7 +96,7 @@ export const api = {
   search: {
     global: async (query: string) => {
       if (!query || query.length < 2) return [];
-      let wsId = useWorkspaceStore.getState().activeWorkspaceId;
+      const wsId = useWorkspaceStore.getState().activeWorkspaceId;
       if (!wsId) return [];
 
       // We will perform a simple search over our API or Server Action
