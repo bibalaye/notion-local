@@ -12,9 +12,8 @@
     "test": "node -e \"process.exit(0)\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
-  "dependencies": {
-    "openai": "^4.104.0"
-  },
+  "dependencies": {},
+
   "devDependencies": {
     "@notoflow/config": "workspace:*",
     "eslint": "^9.28.0",

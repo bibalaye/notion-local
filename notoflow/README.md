@@ -14,7 +14,7 @@ graph TD
     apps/web --> packages/realtime[Collaboration & Présence]
     apps/web --> packages/database-engine[Moteur de Données & Formules]
     apps/web --> packages/database[Schémas & Client Prisma]
-    apps/web --> packages/ai[Client OpenAI Streaming]
+    apps/web --> packages/ai[Client Mistral Streaming]
     apps/web --> packages/ui[Bibliothèque de Composants UI]
 ```
 
@@ -24,7 +24,7 @@ graph TD
 * **`packages/realtime`** : Hook réactif exploitant **Supabase Realtime** pour le suivi des curseurs collaboratifs et la présence des utilisateurs (gestion d'avatars de couleur).
 * **`packages/database-engine`** : Noyau fonctionnel qui filtre, trie, groupe et calcule les formules (champs calculés personnalisés) pour les bases de données NotoFlow.
 * **`packages/database`** : Modèles de données **Prisma** avec client pré-généré et scripts d'initialisation (seeds) pour Postgres.
-* **`packages/ai`** : Module client OpenAI configuré pour générer du texte en continu (streaming) avec gestion de prompts prédéfinis.
+* **`packages/ai`** : Module client Mistral configuré pour générer du texte en continu (streaming) avec gestion de prompts prédéfinis.
 * **`packages/ui`** : Composants graphiques fondamentaux (dialogues, boutons, menus) basés sur Radix UI.
 
 ---
@@ -47,7 +47,7 @@ graph TD
 * Édition en ligne (inline editing) des cellules (textes, statuts, dates, cases à cocher).
 
 ### 🤖 Assistant IA Rédacteur (Streaming)
-* Génération de texte en continu (Server-Sent Events) via OpenAI GPT-4o-mini.
+* Génération de texte en continu (Server-Sent Events) via Mistral (mistral-large).
 * Actions rapides prédéfinies :
   - **Améliorer le style** : Reformulation fluide et ton professionnel.
   - **Résumer** : Extraction synthétique sous forme de liste à puces.
@@ -98,7 +98,7 @@ Voici les principaux modèles définis dans le schéma PostgreSQL (`packages/dat
    * `DATABASE_URL` (Base PostgreSQL)
    * `NEXT_PUBLIC_SUPABASE_URL` (Supabase API)
    * `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Supabase Clé publique)
-   * `OPENAI_API_KEY` (Clé API OpenAI pour l'assistant IA)
+   * `MISTRAL_API_KEY` (Clé API Mistral pour l'assistant IA)
 
 ### Préparation de la Base de Données
 Initialisez le schéma Prisma et chargez les données de test :

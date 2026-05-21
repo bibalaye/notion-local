@@ -1,36 +1,28 @@
 export async function* streamCompletion(prompt: string, systemPrompt?: string) {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.MISTRAL_API_KEY;
   if (!apiKey) {
-    throw new Error("Clé API OpenAI manquante (OPENAI_API_KEY).");
+    throw new Error("Clé API Mistral manquante (MISTRAL_API_KEY).");
   }
+  const base = process.env.MISTRAL_API_BASE || "https://api.mistral.ai";
+  const model = process.env.MISTRAL_MODEL || "mistral-large";
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch(`${base}/v1/models/${model}/invoke`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [
-        ...(systemPrompt
-          ? [{ role: "system", content: systemPrompt }]
-          : [
-              {
-                role: "system",
-                content:
-                  "Tu es un assistant de rédaction IA intégré à NotoFlow, un clone moderne de Notion. Aide l'utilisateur à structurer, reformuler ou enrichir ses documents.",
-              },
-            ]),
-        { role: "user", content: prompt },
-      ],
+      input: prompt,
+      // parameters can be adjusted via env or extended here
+      parameters: { max_new_tokens: 512 },
       stream: true,
     }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`OpenAI API Error: ${errorText}`);
+    throw new Error(`Mistral API Error: ${errorText}`);
   }
 
   const reader = response.body?.getReader();
@@ -54,7 +46,8 @@ export async function* streamCompletion(prompt: string, systemPrompt?: string) {
       if (cleanLine.startsWith("data: ")) {
         try {
           const json = JSON.parse(cleanLine.slice(6));
-          const chunk = json.choices?.[0]?.delta?.content;
+          // adapt to possible Mistral streaming shape
+          const chunk = json.output || json.delta?.content || json.choices?.[0]?.delta?.content;
           if (chunk) {
             yield chunk;
           }
@@ -67,30 +60,40 @@ export async function* streamCompletion(prompt: string, systemPrompt?: string) {
 }
 
 export async function generateText(prompt: string, systemPrompt?: string) {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.MISTRAL_API_KEY;
   if (!apiKey) {
-    throw new Error("Clé API OpenAI manquante (OPENAI_API_KEY).");
+    throw new Error("Clé API Mistral manquante (MISTRAL_API_KEY).");
   }
+  const base = process.env.MISTRAL_API_BASE || "https://api.mistral.ai";
+  const model = process.env.MISTRAL_MODEL || "mistral-large";
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch(`${base}/v1/models/${model}/invoke`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [
-        ...(systemPrompt ? [{ role: "system", content: systemPrompt }] : []),
-        { role: "user", content: prompt },
-      ],
+      input: prompt,
+      parameters: { max_new_tokens: 512 },
+      stream: false,
     }),
   });
 
   if (!response.ok) {
-    throw new Error(`Erreur OpenAI API: ${response.statusText}`);
+    throw new Error(`Erreur Mistral API: ${response.statusText}`);
   }
 
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content || "";
+  // Try to parse JSON response; fallback to plain text
+  try {
+    const data = await response.json();
+    // common places where text may appear
+    if (typeof data.output === "string") return data.output;
+    if (Array.isArray(data.outputs) && data.outputs[0]?.content) return data.outputs[0].content;
+    if (data.result?.output) return data.result.output;
+    // fallback: stringify entire body
+    return JSON.stringify(data);
+  } catch (e) {
+    return await response.text();
+  }
 }
