@@ -20,7 +20,7 @@ export function usePageRealtime(
   supabaseUrl: string,
   supabaseAnonKey: string,
   pageId: string,
-  currentUser: RealtimeUser,
+  currentUser: RealtimeUser | null,
   onRemoteDocUpdate?: () => void,
 ) {
   const [activeUsers, setActiveUsers] = useState<RealtimeUser[]>([]);
@@ -30,7 +30,7 @@ export function usePageRealtime(
   const cursorsRef = useRef<Record<string, CollaborativeCursor>>({});
 
   useEffect(() => {
-    if (!pageId || !currentUser.id) return;
+    if (!pageId || !currentUser?.id) return;
 
     // Initialize Supabase Client
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -118,12 +118,12 @@ export function usePageRealtime(
       setActiveUsers([]);
       channelRef.current = null;
     };
-  }, [supabaseUrl, supabaseAnonKey, pageId, currentUser.id, currentUser.name, currentUser.avatarUrl, currentUser.color]);
+  }, [supabaseUrl, supabaseAnonKey, pageId, currentUser?.id, currentUser?.name, currentUser?.avatarUrl, currentUser?.color]);
 
   // Broadcast function for local cursor selection changes
   const broadcastCursorMove = useCallback(
     (pos: number) => {
-      if (channelRef.current) {
+      if (channelRef.current && currentUser?.id) {
         channelRef.current.send({
           type: "broadcast",
           event: "cursor-move",
@@ -136,12 +136,12 @@ export function usePageRealtime(
         });
       }
     },
-    [currentUser.id, currentUser.name, currentUser.color],
+    [currentUser?.id, currentUser?.name, currentUser?.color],
   );
 
   // Broadcast function for page update changes
   const broadcastDocUpdate = useCallback(() => {
-    if (channelRef.current) {
+    if (channelRef.current && currentUser?.id) {
       channelRef.current.send({
         type: "broadcast",
         event: "doc-update",
@@ -150,7 +150,7 @@ export function usePageRealtime(
         },
       });
     }
-  }, [currentUser.id]);
+  }, [currentUser?.id]);
 
   return {
     activeUsers,

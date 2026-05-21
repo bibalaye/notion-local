@@ -31,6 +31,13 @@ export async function updateSession(request: NextRequest) {
 
   const isAuthRoute = ["/login", "/signup"].some((p) => request.nextUrl.pathname.startsWith(p));
   const isAppRoute = request.nextUrl.pathname.startsWith("/app");
+  const isPageRoute = /^\/app\/page\/[^/]+/.test(request.nextUrl.pathname);
+
+  if (!user && isPageRoute) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = request.nextUrl.pathname.replace("/app/page", "/p");
+    return NextResponse.redirect(redirectUrl);
+  }
 
   if (!user && isAppRoute) {
     const redirectUrl = request.nextUrl.clone();

@@ -14,13 +14,13 @@ export default async function DocumentPage({ params }: PageProps) {
     const page = await getPage(id);
     const user = await getOrCreateProfile();
 
-    if (!user) {
+    if (!user && !page.isPublic) {
       redirect("/login");
     }
 
     // Convert decimal or other json values safely
     const serializedPage = JSON.parse(JSON.stringify(page));
-    const serializedUser = JSON.parse(JSON.stringify(user));
+    const serializedUser = user ? JSON.parse(JSON.stringify(user)) : null;
 
     return <PageEditorClient page={serializedPage} currentUser={serializedUser} />;
   } catch (err: any) {
