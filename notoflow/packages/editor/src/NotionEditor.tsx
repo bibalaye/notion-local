@@ -44,6 +44,14 @@ const highlights = [
 ];
 
 function normalizeEditorContent(initialContent: unknown) {
+  if (typeof initialContent === "string") {
+    try {
+      return normalizeEditorContent(JSON.parse(initialContent));
+    } catch {
+      return { type: "doc", content: [] };
+    }
+  }
+
   if (Array.isArray(initialContent)) {
     return { type: "doc", content: initialContent };
   }
@@ -319,12 +327,14 @@ export function NotionEditor({
 
   // Keep editor content in-sync when page changes
   useEffect(() => {
-    if (editor && initialContent) {
-      const currentJSON = JSON.stringify(editor.getJSON());
-      const incomingJSON = JSON.stringify(initialContent);
-      if (currentJSON !== incomingJSON) {
-        editor.commands.setContent(initialContent);
-      }
+    if (!editor) return;
+
+    const normalizedInitialContent = normalizeEditorContent(initialContent);
+    const currentJSON = JSON.stringify(editor.getJSON());
+    const incomingJSON = JSON.stringify(normalizedInitialContent);
+
+    if (currentJSON !== incomingJSON) {
+      editor.commands.setContent(normalizedInitialContent);
     }
   }, [editor, initialContent]);
 

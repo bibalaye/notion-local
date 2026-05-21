@@ -146,7 +146,7 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
     try {
       await updatePage(page.id, payload);
       if (payload.title !== undefined) lastSavedTitleRef.current = payload.title;
-      if (payload.content !== undefined) lastSavedContentRef.current = JSON.stringify(payload.content);
+      if (payload.content !== undefined) lastSavedContentRef.current = typeof payload.content === "string" ? payload.content : JSON.stringify(payload.content);
       broadcastDocUpdate();
       setSaveStatus("saved");
       if (savedStatusTimeoutRef.current) clearTimeout(savedStatusTimeoutRef.current);
@@ -201,7 +201,9 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
 
   const handleEditorChange = (json: unknown) => {
     const nextContent = JSON.stringify(json);
-    if (nextContent !== lastSavedContentRef.current) debouncedSave({ content: json }, 3500);
+    if (nextContent !== lastSavedContentRef.current) {
+      debouncedSave({ content: nextContent }, 3500);
+    }
   };
 
   const handleSelectCover = (url: string) => {

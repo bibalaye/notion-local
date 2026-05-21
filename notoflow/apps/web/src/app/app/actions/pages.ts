@@ -20,6 +20,29 @@ async function verifyWorkspaceAccess(workspaceId: string, allowedRoles: string[]
   return { profile, membership };
 }
 
+function normalizePageContent(content: unknown) {
+  if (typeof content === "string") {
+    try {
+      return normalizePageContent(JSON.parse(content));
+    } catch {
+      return { type: "doc", content: [] };
+    }
+  }
+
+  if (Array.isArray(content)) {
+    return { type: "doc", content };
+  }
+
+  if (typeof content === "object" && content !== null) {
+    const asObj = content as { type?: string; content?: unknown };
+    if (asObj.type !== "doc") {
+      return { type: "doc", content: Array.isArray(asObj.content) ? asObj.content : [] };
+    }
+  }
+
+  return content;
+}
+
 // Get the flat list of non-archived pages for building tree structures
 export async function getWorkspacePages(workspaceId: string) {
   await verifyWorkspaceAccess(workspaceId);
@@ -43,7 +66,7 @@ export async function createPage(workspaceId: string, parentId?: string | null) 
       authorId: profile.id,
       parentId: parentId || null,
       title: "Sans titre",
-      content: { type: "doc", content: [] } as any,
+      content: normalizePageContent({ type: "doc", content: [] }) as any,
     },
   });
 
@@ -63,7 +86,7 @@ export async function createPageFromTemplate(workspaceId: string, templateId: st
       authorId: profile.id,
       title: template.title,
       icon: template.icon,
-      content: { type: "doc", content: template.content } as any,
+      content: normalizePageContent({ type: "doc", content: template.content }) as any,
     },
   });
 
@@ -91,7 +114,7 @@ export async function updatePage(
   pageId: string,
   data: {
     title?: string;
-    content?: any;
+    content?: unknown | string;
     icon?: string | null;
     coverUrl?: string | null;
     isPublic?: boolean;
@@ -106,15 +129,30 @@ export async function updatePage(
 
     // Next.js 15 Client Reference Proxy serialization fix:
     // Clone data to avoid proxy traversal errors when Prisma reads fields on the server.
-    const updateData: typeof data = { ...data };
+    const updateData: {
+      title?: string;
+      content?: any;
+      icon?: string | null;
+      coverUrl?: string | null;
+      isPublic?: boolean;
+      position?: number;
+    } = {};
+
+    if (data.title !== undefined) updateData.title = data.title;
+    if (data.icon !== undefined) updateData.icon = data.icon;
+    if (data.coverUrl !== undefined) updateData.coverUrl = data.coverUrl;
+    if (data.isPublic !== undefined) updateData.isPublic = data.isPublic;
+    if (data.position !== undefined) updateData.position = data.position;
+
     if (data.content !== undefined) {
-      updateData.content = JSON.parse(JSON.stringify(data.content));
+      const parsedContent = typeof data.content === "string" ? JSON.parse(data.content) : JSON.parse(JSON.stringify(data.content));
+      updateData.content = normalizePageContent(parsedContent) as Prisma.InputJsonValue;
     }
 
     const updatedPage = await db.page.update({
       where: { id: pageId },
       data: {
-        ...updateData,
+        ...(updateData as any),
         updatedAt: new Date(),
       },
     });
