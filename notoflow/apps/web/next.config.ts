@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   // Standalone = Docker/self-host. Sur Vercel, laisser le mode par défaut.
   ...(process.env.VERCEL
-    ? { outputFileTracingRoot: monorepoRoot }
+    ? {}
     : { output: "standalone", outputFileTracingRoot: monorepoRoot }),
   transpilePackages: [
     "@notoflow/ui",
