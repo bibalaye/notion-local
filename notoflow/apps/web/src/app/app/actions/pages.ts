@@ -43,7 +43,7 @@ export async function createPage(workspaceId: string, parentId?: string | null) 
       authorId: profile.id,
       parentId: parentId || null,
       title: "Sans titre",
-      content: [] as any,
+      content: { type: "doc", content: [] } as any,
     },
   });
 
@@ -63,7 +63,7 @@ export async function createPageFromTemplate(workspaceId: string, templateId: st
       authorId: profile.id,
       title: template.title,
       icon: template.icon,
-      content: template.content as any,
+      content: { type: "doc", content: template.content } as any,
     },
   });
 

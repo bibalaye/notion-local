@@ -43,6 +43,21 @@ const highlights = [
   { label: "Rouge", value: "#fdebeb", color: "bg-[#fdebeb] dark:bg-[#582c2c]" },
 ];
 
+function normalizeEditorContent(initialContent: unknown) {
+  if (Array.isArray(initialContent)) {
+    return { type: "doc", content: initialContent };
+  }
+
+  if (typeof initialContent === "object" && initialContent !== null) {
+    const asObj = initialContent as Record<string, unknown>;
+    if (asObj.type !== "doc") {
+      return { type: "doc", content: Array.isArray(asObj.content) ? asObj.content : [] };
+    }
+  }
+
+  return initialContent ?? { type: "doc", content: [] };
+}
+
 export type NotionEditorProps = {
   initialContent?: unknown;
   onChange?: (json: unknown) => void;
@@ -195,7 +210,7 @@ export function NotionEditor({
   const editor = useEditor({
     immediatelyRender: false,
     extensions: getExtensions({ renderDatabase }),
-    content: initialContent ?? { type: "doc", content: [{ type: "paragraph" }] },
+    content: normalizeEditorContent(initialContent) ?? { type: "doc", content: [{ type: "paragraph" }] },
     editable: !readOnly,
     editorProps: {
       attributes: {
