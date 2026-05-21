@@ -13,6 +13,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "peerDependencies": {
+    "react": "^19.0.0",
     "@supabase/supabase-js": "^2.49.8"
   },
   "peerDependenciesMeta": {
@@ -23,7 +24,9 @@
   "devDependencies": {
     "@notoflow/config": "workspace:*",
     "@supabase/supabase-js": "^2.49.8",
+    "@types/react": "^19.1.6",
     "eslint": "^9.28.0",
+    "react": "^19.1.0",
     "typescript": "^5.8.3"
   }
 }

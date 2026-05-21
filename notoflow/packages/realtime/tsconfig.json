@@ -1,5 +1,5 @@
 {
-  "extends": "@notoflow/config/typescript/base.json",
+  "extends": "@notoflow/config/typescript/react-library.json",
   "compilerOptions": {
     "rootDir": "src",
     "noEmit": true
