@@ -4,25 +4,31 @@ export async function* streamCompletion(prompt: string, systemPrompt?: string) {
     throw new Error("Clé API Mistral manquante (MISTRAL_API_KEY).");
   }
   const base = process.env.MISTRAL_API_BASE || "https://api.mistral.ai";
-  const model = process.env.MISTRAL_MODEL || "mistral-large";
+  const model = process.env.MISTRAL_MODEL || "mistral-large-latest";
 
-  const response = await fetch(`${base}/v1/models/${model}/invoke`, {
+  const messages: any[] = [];
+  if (systemPrompt) {
+    messages.push({ role: "system", content: systemPrompt });
+  }
+  messages.push({ role: "user", content: prompt });
+
+  const response = await fetch(`${base}/v1/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      input: prompt,
-      // parameters can be adjusted via env or extended here
-      parameters: { max_new_tokens: 512 },
+      model,
+      messages,
+      max_tokens: 1024,
       stream: true,
     }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Mistral API Error: ${errorText}`);
+    throw new Error(`Mistral API Error (${response.status}): ${errorText}`);
   }
 
   const reader = response.body?.getReader();
@@ -46,8 +52,8 @@ export async function* streamCompletion(prompt: string, systemPrompt?: string) {
       if (cleanLine.startsWith("data: ")) {
         try {
           const json = JSON.parse(cleanLine.slice(6));
-          // adapt to possible Mistral streaming shape
-          const chunk = json.output || json.delta?.content || json.choices?.[0]?.delta?.content;
+          // Mistral streaming format
+          const chunk = json.choices?.[0]?.delta?.content;
           if (chunk) {
             yield chunk;
           }
@@ -65,34 +71,36 @@ export async function generateText(prompt: string, systemPrompt?: string) {
     throw new Error("Clé API Mistral manquante (MISTRAL_API_KEY).");
   }
   const base = process.env.MISTRAL_API_BASE || "https://api.mistral.ai";
-  const model = process.env.MISTRAL_MODEL || "mistral-large";
+  const model = process.env.MISTRAL_MODEL || "mistral-large-latest";
 
-  const response = await fetch(`${base}/v1/models/${model}/invoke`, {
+  const messages: any[] = [];
+  if (systemPrompt) {
+    messages.push({ role: "system", content: systemPrompt });
+  }
+  messages.push({ role: "user", content: prompt });
+
+  const response = await fetch(`${base}/v1/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      input: prompt,
-      parameters: { max_new_tokens: 512 },
+      model,
+      messages,
+      max_tokens: 1024,
       stream: false,
     }),
   });
 
   if (!response.ok) {
-    throw new Error(`Erreur Mistral API: ${response.statusText}`);
+    throw new Error(`Erreur Mistral API (${response.status}): ${response.statusText}`);
   }
 
-  // Try to parse JSON response; fallback to plain text
   try {
     const data = await response.json();
-    // common places where text may appear
-    if (typeof data.output === "string") return data.output;
-    if (Array.isArray(data.outputs) && data.outputs[0]?.content) return data.outputs[0].content;
-    if (data.result?.output) return data.result.output;
-    // fallback: stringify entire body
-    return JSON.stringify(data);
+    // Format standard OpenAI/Mistral
+    return data.choices?.[0]?.message?.content || JSON.stringify(data);
   } catch (e) {
     return await response.text();
   }
