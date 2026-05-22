@@ -3,6 +3,7 @@ import { db } from "@notoflow/database";
 import Link from "next/link";
 import { Sparkles, Star, Clock, Plus, Database, Settings, ArrowRight } from "lucide-react";
 import { Button } from "@notoflow/ui/components/button";
+import { QuickAiActions } from "@/components/ai/QuickAiActions";
 
 export default async function AppHomePage() {
   const profile = await getOrCreateProfile();
@@ -99,6 +100,9 @@ export default async function AppHomePage() {
           <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
         </Link>
       </div>
+
+      {/* ✨ Mistral AI Studio Quick Actions Widget */}
+      {workspace && <QuickAiActions workspaceId={workspace.id} />}
 
       {/* Lists Segment */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

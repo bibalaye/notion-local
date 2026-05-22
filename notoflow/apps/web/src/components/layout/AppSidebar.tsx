@@ -11,6 +11,7 @@ import {
   Settings,
   Star,
   Trash2,
+  Sparkles,
 } from "lucide-react";
 import {
   Sidebar,
@@ -67,6 +68,18 @@ export function AppSidebar() {
                     <Clock className="h-4 w-4" />
                     <span>Récent</span>
                   </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => window.dispatchEvent(new CustomEvent("open-ai-studio"))}
+                  className="w-full text-left font-bold text-violet-500 hover:text-violet-600 hover:bg-violet-500/5 group/ai transition-colors"
+                >
+                  <Sparkles className="h-4.5 w-4.5 text-violet-500 group-hover/ai:animate-pulse" />
+                  <span>Assistant IA</span>
+                  <span className="ml-auto rounded-full bg-violet-500/10 px-1.5 py-0.5 text-[9px] font-extrabold text-violet-500 uppercase tracking-wide">
+                    Studio
+                  </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>

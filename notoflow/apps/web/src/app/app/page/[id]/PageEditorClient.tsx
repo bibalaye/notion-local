@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { NotionEditor } from "@notoflow/editor";
 import { usePageRealtime } from "@notoflow/realtime";
 import { DatabaseView } from "@/components/database/DatabaseView";
-import { updatePage, toggleFavorite, archivePage, duplicatePage } from "@/app/app/actions/pages";
+import { updatePage, toggleFavorite, archivePage, duplicatePage, createPage } from "@/app/app/actions/pages";
 import { Button } from "@notoflow/ui/components/button";
 import {
   Star,
@@ -23,6 +23,18 @@ import {
   Smile,
   ChevronRight,
   MoreHorizontal,
+  FileText,
+  CheckSquare,
+  Map,
+  MessageSquare,
+  Terminal,
+  LayoutDashboard,
+  Check,
+  Users,
+  Cpu,
+  Compass,
+  ChevronLeft,
+  Database,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -91,6 +103,14 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiResponse, setAiResponse] = useState("");
   const [isAiStreaming, setIsAiStreaming] = useState(false);
+  const [editorInstance, setEditorInstance] = useState<any>(null);
+  const [aiActiveTab, setAiActiveTab] = useState<"chat" | "generators" | "coder" | "suggest">("chat");
+  const [selectionContext, setSelectionContext] = useState("");
+  const [chatMessages, setChatMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
+  const [selectedGenerator, setSelectedGenerator] = useState<any>(null);
+  const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
+  const [generatorInputs, setGeneratorInputs] = useState<Record<string, string>>({});
+  const [selectedLanguage, setSelectedLanguage] = useState("anglais");
 
   // Random cursor color
   const colorRef = useRef(CURSOR_COLORS[Math.floor(Math.random() * CURSOR_COLORS.length)]);
@@ -287,14 +307,19 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
   }, []);
 
   // AI Prompt stream function
-  const handleAiAction = async (type: string, options?: { lang?: string }) => {
+  const handleAiAction = async (
+    type: string,
+    options?: { lang?: string; customPrompt?: string; directEditorInsert?: boolean }
+  ) => {
     setIsAiStreaming(true);
     setAiResponse("");
     setIsAiOpen(true);
 
+    const targetPrompt = options?.customPrompt || aiPrompt || "Améliore ce document";
+
     try {
       const payload: any = {
-        prompt: aiPrompt || "Améliore ce document",
+        prompt: targetPrompt,
         type,
       };
       if (options?.lang) payload.targetLang = options.lang;
@@ -311,6 +336,8 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
       const decoder = new TextDecoder("utf-8");
       if (!reader) return;
 
+      let fullContent = "";
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -326,7 +353,12 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
             try {
               const json = JSON.parse(dataStr);
               if (json.text) {
-                setAiResponse((prev) => prev + json.text);
+                fullContent += json.text;
+                setAiResponse(fullContent);
+
+                if (options?.directEditorInsert && editorInstance) {
+                  editorInstance.commands.setContent(fullContent);
+                }
               }
             } catch (e) {
               // ignore parse errors
@@ -334,10 +366,137 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
           }
         }
       }
+
+      if (options?.directEditorInsert && editorInstance) {
+        const json = editorInstance.getJSON();
+        debouncedSave({ content: JSON.stringify(json) }, 100);
+      }
     } catch (err: any) {
       toast.error("Erreur de l'assistant IA");
     } finally {
       setIsAiStreaming(false);
+    }
+  };
+
+  const handleSendChatMessage = async (customPromptText?: string) => {
+    const promptToSend = customPromptText || aiPrompt;
+    if (!promptToSend.trim()) return;
+
+    setIsAiStreaming(true);
+    setAiResponse("");
+    setAiPrompt("");
+
+    const userMsg = { role: "user" as const, content: promptToSend };
+    const nextHistory = [...chatMessages, userMsg];
+    setChatMessages(nextHistory);
+
+    try {
+      const conversationText = nextHistory
+        .map((m) => `${m.role === "user" ? "Utilisateur" : "Assistant"}: ${m.content}`)
+        .join("\n") + "\nAssistant:";
+
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: conversationText,
+          type: "chat",
+        }),
+      });
+
+      if (!response.ok) throw new Error("Erreur de l'API de chat IA");
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder("utf-8");
+      if (!reader) return;
+
+      let fullContent = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          const cleanLine = line.trim();
+          if (cleanLine.startsWith("data: ")) {
+            const dataStr = cleanLine.slice(6);
+            if (dataStr === "[DONE]") continue;
+            try {
+              const json = JSON.parse(dataStr);
+              if (json.text) {
+                fullContent += json.text;
+                setAiResponse(fullContent);
+              }
+            } catch (e) {
+              // ignore parse errors
+            }
+          }
+        }
+      }
+
+      setChatMessages((prev) => [...prev, { role: "assistant", content: fullContent }]);
+      setAiResponse("");
+    } catch (err: any) {
+      toast.error("Erreur lors de la communication avec le chat IA");
+    } finally {
+      setIsAiStreaming(false);
+    }
+  };
+
+  const handleInsertAtCursor = (htmlContent: string) => {
+    if (!editorInstance) {
+      toast.error("Éditeur non initialisé.");
+      return;
+    }
+    editorInstance.commands.insertContent(htmlContent);
+    toast.success("Contenu inséré avec succès !");
+  };
+
+  // Process direct AI page generation request from query parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldGenerate = urlParams.get("ai_generate") === "true";
+    const shouldOpen = urlParams.get("ai_open") === "true";
+
+    if ((shouldGenerate || shouldOpen) && editorInstance) {
+      setIsAiOpen(true);
+      if (shouldGenerate) {
+        const type = urlParams.get("type") || "generate-page";
+        const promptText = urlParams.get("prompt") || "Nouveau document";
+        // Clear query params immediately
+        window.history.replaceState({}, document.title, window.location.pathname);
+        void handleAiAction(type, { customPrompt: promptText, directEditorInsert: true });
+      } else {
+        // Just clear query params if we are just opening
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }, [editorInstance]);
+
+  useEffect(() => {
+    const handleOpenAiStudio = () => {
+      setIsAiOpen(true);
+    };
+    window.addEventListener("open-ai-studio", handleOpenAiStudio);
+    return () => {
+      window.removeEventListener("open-ai-studio", handleOpenAiStudio);
+    };
+  }, []);
+
+  // Create a new empty page in the workspace, redirect to it and trigger direct AI streaming
+  const handleCreateAndGenerate = async (genType: string) => {
+    try {
+      const newPage = await createPage(page.workspaceId);
+      toast.success("Page créée avec succès ! Initialisation de l'IA...");
+      router.push(
+        `/app/page/${newPage.id}?ai_generate=true&prompt=${encodeURIComponent(
+          aiPrompt || "Document généré par l'IA"
+        )}&type=${genType}`
+      );
+    } catch (err: any) {
+      toast.error("Erreur lors de la création directe de la page");
     }
   };
 
@@ -699,120 +858,592 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
             renderDatabase={(dbId) => <DatabaseView databaseId={dbId} />}
             onCursorChange={(pos) => broadcastCursorMove(pos)}
             collaborativeCursors={collaborativeCursors}
-            onTriggerAI={() => {
-              if (!isReadOnly) setIsAiOpen(true);
+            onEditorReady={(editor) => setEditorInstance(editor)}
+            onTriggerAI={(editor) => {
+              if (!isReadOnly) {
+                setEditorInstance(editor);
+                setIsAiOpen(true);
+              }
             }}
           />
         </div>
       </div>
 
-      {/* Floating AI Side Panel */}
+      {/* Floating AI Side Panel - ✨ Mistral AI Studio */}
       <AnimatePresence>
         {isAiOpen && (
           <motion.div
             initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 360, opacity: 1 }}
+            animate={{ width: 420, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
-            className="border-l border-border/50 bg-card/90 backdrop-blur-xl h-full flex flex-col shadow-2xl shrink-0"
+            className="border-l border-border/50 bg-card/90 backdrop-blur-xl h-full flex flex-col shadow-2xl shrink-0 z-30"
           >
             {/* AI Side Header */}
-            <div className="flex items-center justify-between border-b border-border/40 px-5 py-4 bg-muted/20">
+            <div className="flex items-center justify-between border-b border-border/40 px-5 py-4 bg-muted/20 shrink-0">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4.5 w-4.5 text-violet-500" />
-                <h3 className="text-sm font-bold tracking-tight">Rédacteur IA</h3>
+                <Sparkles className="h-5 w-5 text-violet-500 animate-pulse" />
+                <h3 className="text-sm font-black tracking-tight bg-gradient-to-r from-violet-400 via-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+                  Mistral AI Studio
+                </h3>
               </div>
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setIsAiOpen(false)}>
+              <Button size="icon" variant="ghost" className="h-7 w-7 rounded-full hover:bg-accent/60" onClick={() => setIsAiOpen(false)}>
                 ✕
               </Button>
             </div>
 
-            {/* Quick Prompts Panel */}
-            <div className="p-4 space-y-4 flex-1 overflow-y-auto">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                  Instructions personnalisées
-                </label>
-                <div className="relative">
-                  <textarea
-                    rows={3}
-                    placeholder="ex: Réécris ce paragraphe dans un ton plus professionnel..."
-                    value={aiPrompt}
-                    onChange={(e) => setAiPrompt(e.target.value)}
-                    className="w-full text-xs rounded-xl border border-border/80 bg-background/50 p-3 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition"
-                  />
+            {/* AI Studio Tabs Navigation */}
+            <div className="flex border-b border-border/30 bg-muted/5 shrink-0 px-2 py-1 gap-1">
+              {[
+                { id: "chat", label: "Chat", icon: MessageSquare },
+                { id: "generators", label: "Générateurs", icon: Sparkles },
+                { id: "coder", label: "Dev", icon: Terminal },
+                { id: "suggest", label: "Organiser", icon: Compass },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                const isActive = aiActiveTab === tab.id;
+                return (
                   <button
-                    onClick={() => handleAiAction("custom")}
-                    disabled={isAiStreaming}
-                    className="absolute bottom-2.5 right-2.5 h-6 w-6 rounded bg-violet-600 hover:bg-violet-700 text-white flex items-center justify-center transition disabled:opacity-50"
+                    key={tab.id}
+                    onClick={() => {
+                      setAiActiveTab(tab.id as any);
+                      setSelectedGenerator(null);
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 text-[11px] font-bold rounded-lg transition-all ${
+                      isActive
+                        ? "bg-violet-600/10 text-violet-500 border border-violet-500/25"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                    }`}
                   >
-                    {isAiStreaming ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Send className="h-3.5 w-3.5" />
-                    )}
+                    <Icon className={`h-3.5 w-3.5 ${isActive ? "text-violet-500" : "text-muted-foreground"}`} />
+                    <span>{tab.label}</span>
                   </button>
-                </div>
-              </div>
+                );
+              })}
+            </div>
 
-              {/* Quick Assistant Actions Grid */}
-              <div className="space-y-2">
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                  Actions rapides
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleAiAction("improve")}
-                    disabled={isAiStreaming}
-                    className="h-8 justify-start text-[11px] font-semibold gap-1.5"
-                  >
-                    <RefreshCcw className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                    Améliorer
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleAiAction("summarize")}
-                    disabled={isAiStreaming}
-                    className="h-8 justify-start text-[11px] font-semibold gap-1.5"
-                  >
-                    <BookOpen className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-                    Résumer
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleAiAction("expand")}
-                    disabled={isAiStreaming}
-                    className="h-8 justify-start text-[11px] font-semibold gap-1.5"
-                  >
-                    <Sparkles className="h-3.5 w-3.5 text-violet-500 shrink-0" />
-                    Développer
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleAiAction("translate", { lang: "anglais" })}
-                    disabled={isAiStreaming}
-                    className="h-8 justify-start text-[11px] font-semibold gap-1.5"
-                  >
-                    <Languages className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
-                    Tr. Anglais
-                  </Button>
-                </div>
-              </div>
+            {/* Tab Contents */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {/* --- 1. CHAT TAB --- */}
+              {aiActiveTab === "chat" && (
+                <div className="h-full flex flex-col justify-between space-y-4">
+                  {/* Message History & Context */}
+                  <div className="flex-1 overflow-y-auto space-y-4 pr-1 min-h-[300px]">
+                    {/* Welcome Message */}
+                    {chatMessages.length === 0 && (
+                      <div className="rounded-2xl border border-dashed border-border/60 bg-muted/10 p-5 text-center space-y-2">
+                        <Sparkles className="h-6 w-6 text-violet-500 mx-auto" />
+                        <h4 className="text-xs font-bold">Bienvenue sur le Chat Mistral</h4>
+                        <p className="text-[10px] text-muted-foreground leading-normal">
+                          Posez des questions sur votre document, demandez des améliorations de style ou rédigez du contenu complet.
+                        </p>
+                      </div>
+                    )}
 
-              {/* Streaming Output Result */}
-              {aiResponse && (
-                <div className="space-y-2 pt-2 border-t border-border/40 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex justify-between items-center">
-                    <span>Résultat</span>
-                    {isAiStreaming && <span className="animate-pulse text-violet-500 text-[9px]">En cours...</span>}
+                    {/* Active Editor Text Selection Context Card */}
+                    {editorInstance && (() => {
+                      const sel = editorInstance.state.selection;
+                      const hasSelection = sel && sel.from !== sel.to;
+                      if (!hasSelection) return null;
+                      const text = editorInstance.state.doc.textBetween(sel.from, sel.to, " ");
+                      return (
+                        <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-3 space-y-2 animate-in fade-in duration-200">
+                          <div className="flex items-center gap-1.5 text-[10px] font-black text-violet-500 uppercase tracking-wider">
+                            <Sparkles className="h-3 w-3" /> Texte sélectionné dans l&apos;éditeur
+                          </div>
+                          <p className="text-[10px] text-muted-foreground line-clamp-2 italic bg-background/40 p-2 rounded-lg">
+                            &quot;{text}&quot;
+                          </p>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setAiPrompt(`Améliore ce texte sélectionné : "${text}"`);
+                                toast.success("Sélection insérée dans la boîte de dialogue !");
+                              }}
+                              className="text-[9px] h-6 px-2.5 font-bold"
+                            >
+                              Utiliser comme prompt
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Chat Bubble List */}
+                    {chatMessages.map((msg, index) => (
+                      <div
+                        key={index}
+                        className={`flex flex-col space-y-1.5 max-w-[85%] ${
+                          msg.role === "user" ? "ml-auto items-end" : "mr-auto items-start"
+                        }`}
+                      >
+                        <div
+                          className={`rounded-2xl px-4 py-3 text-xs leading-relaxed transition-all ${
+                            msg.role === "user"
+                              ? "bg-violet-600/10 border border-violet-500/20 text-foreground"
+                              : "bg-muted/40 border border-border/30 text-foreground prose-xs prose-invert"
+                          }`}
+                          dangerouslySetInnerHTML={msg.role === "assistant" ? { __html: msg.content } : undefined}
+                        >
+                          {msg.role === "user" ? msg.content : undefined}
+                        </div>
+                        {msg.role === "assistant" && (
+                          <div className="flex items-center gap-2 pl-1 select-none">
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(msg.content.replace(/<[^>]*>/g, ""));
+                                setCopiedStates((prev) => ({ ...prev, [index]: true }));
+                                toast.success("Contenu copié !");
+                                setTimeout(() => setCopiedStates((prev) => ({ ...prev, [index]: false })), 2000);
+                              }}
+                              className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground hover:text-foreground transition"
+                            >
+                              {copiedStates[index] ? (
+                                <>
+                                  <Check className="h-3 w-3 text-emerald-500" />
+                                  <span>Copié</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3 w-3" />
+                                  <span>Copier</span>
+                                </>
+                              )}
+                            </button>
+                            <span className="text-muted-foreground/30 text-[9px]">•</span>
+                            <button
+                              onClick={() => handleInsertAtCursor(msg.content)}
+                              className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground hover:text-foreground transition"
+                            >
+                              <FileText className="h-3 w-3 text-violet-500" />
+                              <span>Insérer au curseur</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* Active Streaming Output Bubble */}
+                    {aiResponse && (
+                      <div className="flex flex-col space-y-1.5 max-w-[85%] mr-auto items-start animate-in fade-in duration-200">
+                        <div className="rounded-2xl px-4 py-3 text-xs leading-relaxed bg-muted/40 border border-violet-500/20 text-foreground prose-xs prose-invert">
+                          <div dangerouslySetInnerHTML={{ __html: aiResponse }} />
+                          <span className="inline-block h-3.5 w-1 bg-violet-500 animate-pulse ml-0.5 rounded-full" />
+                        </div>
+                        <div className="flex items-center gap-1.5 pl-1 select-none">
+                          <Loader2 className="h-3 w-3 animate-spin text-violet-500" />
+                          <span className="text-[9px] text-violet-500 animate-pulse font-bold">Mistral génère...</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="rounded-xl border bg-muted/30 p-4.5 text-xs leading-relaxed max-h-[250px] overflow-y-auto select-all whitespace-pre-wrap">
-                    {aiResponse}
+
+                  {/* Input Chat Box */}
+                  <div className="pt-2 border-t border-border/40 shrink-0">
+                    <div className="relative">
+                      <textarea
+                        rows={2}
+                        placeholder="Envoyez un message à Mistral..."
+                        value={aiPrompt}
+                        onChange={(e) => setAiPrompt(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            void handleSendChatMessage();
+                          }
+                        }}
+                        className="w-full text-xs rounded-xl border border-border/80 bg-background/50 p-3 pr-10 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition resize-none"
+                      />
+                      <button
+                        onClick={() => handleSendChatMessage()}
+                        disabled={isAiStreaming || !aiPrompt.trim()}
+                        className="absolute bottom-2.5 right-2.5 h-7 w-7 rounded-lg bg-violet-600 hover:bg-violet-700 text-white flex items-center justify-center transition disabled:opacity-30 disabled:hover:bg-violet-600"
+                      >
+                        {isAiStreaming ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Send className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
                   </div>
+                </div>
+              )}
+
+              {/* --- 2. GENERATORS TAB --- */}
+              {aiActiveTab === "generators" && (
+                <div className="space-y-4">
+                  {!selectedGenerator ? (
+                    <>
+                      {/* Grid of 10 Specialized Generators */}
+                      <div className="flex flex-col gap-2">
+                        {[
+                          {
+                            id: "generate-page",
+                            title: "Créateur de Page",
+                            desc: "Génère un document entier riche et structuré.",
+                            icon: FileText,
+                            color: "text-violet-500 bg-violet-500/10",
+                          },
+                          {
+                            id: "meeting",
+                            title: "Résumé de Réunion",
+                            desc: "Analyse une transcription et génère un plan d&apos;action.",
+                            icon: Users,
+                            color: "text-emerald-500 bg-emerald-500/10",
+                          },
+                          {
+                            id: "tasks",
+                            title: "Extracteur de Tâches",
+                            desc: "Extrait une checklist actionnable de vos notes.",
+                            icon: CheckSquare,
+                            color: "text-blue-500 bg-blue-500/10",
+                          },
+                          {
+                            id: "roadmap",
+                            title: "Feuille de Route",
+                            desc: "Génère une roadmap projet trimestrielle structurée.",
+                            icon: Map,
+                            color: "text-amber-500 bg-amber-500/10",
+                          },
+                          {
+                            id: "crm",
+                            title: "Structure CRM",
+                            desc: "Crée une base de données clients complète.",
+                            icon: Database,
+                            color: "text-pink-500 bg-pink-500/10",
+                          },
+                          {
+                            id: "docs",
+                            title: "Doc Technique",
+                            desc: "Documentation structurée avec blocs de code.",
+                            icon: Terminal,
+                            color: "text-teal-500 bg-teal-500/10",
+                          },
+                          {
+                            id: "dev",
+                            title: "Assistant Code",
+                            desc: "Analyse, debugue ou génère des algorithmes.",
+                            icon: Cpu,
+                            color: "text-indigo-500 bg-indigo-500/10",
+                          },
+                          {
+                            id: "translate",
+                            title: "Traducteur Express",
+                            desc: "Traduit fidèlement dans n&apos;importe quelle langue.",
+                            icon: Languages,
+                            color: "text-cyan-500 bg-cyan-500/10",
+                          },
+                          {
+                            id: "suggest",
+                            title: "Conseiller Workspace",
+                            desc: "Suggestions d&apos;organisation documentaires.",
+                            icon: Compass,
+                            color: "text-orange-500 bg-orange-500/10",
+                          },
+                          {
+                            id: "dashboard",
+                            title: "KPI Dashboard",
+                            desc: "Génère un tableau de bord analytique.",
+                            icon: LayoutDashboard,
+                            color: "text-purple-500 bg-purple-500/10",
+                          },
+                        ].map((gen) => {
+                          const Icon = gen.icon;
+                          return (
+                            <button
+                              key={gen.id}
+                              onClick={() => {
+                                setSelectedGenerator(gen);
+                                setGeneratorInputs((prev) => ({ ...prev, [gen.id]: "" }));
+                              }}
+                              className="w-full text-left p-3 rounded-xl border border-border/40 hover:border-violet-500/30 bg-card hover:bg-accent/25 transition-all flex items-center gap-3.5 group"
+                            >
+                              <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${gen.color}`}>
+                                <Icon className="h-5 w-5" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-xs font-bold text-foreground group-hover:text-violet-400 transition">
+                                  {gen.title}
+                                </h4>
+                                <p className="text-[10px] text-muted-foreground truncate">{gen.desc}</p>
+                              </div>
+                              <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-foreground transition shrink-0" />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  ) : (
+                    /* Detailed Config Screen for Selected Generator */
+                    <div className="space-y-4 animate-in slide-in-from-right-4 duration-200">
+                      <Button
+                        onClick={() => setSelectedGenerator(null)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-[11px] h-7 px-2 hover:bg-accent/40 gap-1"
+                      >
+                        <ChevronLeft className="h-3.5 w-3.5" /> Retour aux générateurs
+                      </Button>
+
+                      <div className="flex items-center gap-2">
+                        <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${selectedGenerator.color}`}>
+                          <selectedGenerator.icon className="h-4.5 w-4.5" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold">{selectedGenerator.title}</h4>
+                          <p className="text-[10px] text-muted-foreground">{selectedGenerator.desc}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                          {selectedGenerator.id === "meeting" && "Coller la transcription de réunion"}
+                          {selectedGenerator.id === "tasks" && "Notes ou texte brut"}
+                          {selectedGenerator.id === "translate" && "Texte à traduire"}
+                          {selectedGenerator.id === "suggest" && "Instructions / Contexte de l'espace"}
+                          {selectedGenerator.id !== "meeting" &&
+                            selectedGenerator.id !== "tasks" &&
+                            selectedGenerator.id !== "translate" &&
+                            selectedGenerator.id !== "suggest" &&
+                            "Sujet ou consignes de génération"}
+                        </label>
+                        <textarea
+                          rows={selectedGenerator.id === "meeting" ? 6 : 4}
+                          placeholder={
+                            selectedGenerator.id === "meeting"
+                              ? "ex: Jean: Salut tout le monde, aujourd'hui nous devons valider les livrables de la V2..."
+                              : selectedGenerator.id === "translate"
+                              ? "ex: Entrez le texte que vous souhaitez faire traduire par Mistral..."
+                              : "ex: Entrez les consignes détaillées ici..."
+                          }
+                          value={generatorInputs[selectedGenerator.id] || ""}
+                          onChange={(e) =>
+                            setGeneratorInputs((prev) => ({ ...prev, [selectedGenerator.id]: e.target.value }))
+                          }
+                          className="w-full text-xs rounded-xl border border-border/80 bg-background/50 p-3 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition"
+                        />
+                      </div>
+
+                      {/* Language Selection for Translator */}
+                      {selectedGenerator.id === "translate" && (
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                            Langue cible
+                          </label>
+                          <select
+                            value={selectedLanguage}
+                            onChange={(e) => setSelectedLanguage(e.target.value)}
+                            className="w-full text-xs rounded-xl border border-border/80 bg-background/50 p-2.5 focus:outline-none focus:border-violet-500"
+                          >
+                            <option value="anglais">🇬🇧 Anglais</option>
+                            <option value="espagnol">🇪🇸 Espagnol</option>
+                            <option value="allemand">🇩🇪 Allemand</option>
+                            <option value="italien">🇮🇹 Italien</option>
+                            <option value="portugais">🇵🇹 Portugais</option>
+                            <option value="japonais">🇯🇵 Japonais</option>
+                          </select>
+                        </div>
+                      )}
+
+                      {/* Generators Actions Trigger */}
+                      <div className="space-y-2 pt-2 border-t border-border/30">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                          Destination de l&apos;AI
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            onClick={() => {
+                              void handleAiAction(selectedGenerator.id, {
+                                customPrompt: generatorInputs[selectedGenerator.id],
+                                lang: selectedGenerator.id === "translate" ? selectedLanguage : undefined,
+                                directEditorInsert: true,
+                              });
+                              setSelectedGenerator(null);
+                            }}
+                            disabled={isAiStreaming || !generatorInputs[selectedGenerator.id]?.trim()}
+                            variant="outline"
+                            className="text-xs h-9 justify-center gap-1 hover:bg-violet-600/10 hover:text-violet-500"
+                          >
+                            Dans ce document
+                          </Button>
+                          <Button
+                            onClick={async () => {
+                              const promptText = generatorInputs[selectedGenerator.id];
+                              try {
+                                const newPage = await createPage(page.workspaceId);
+                                toast.success("Nouvelle page créée !");
+                                router.push(
+                                  `/app/page/${newPage.id}?ai_generate=true&prompt=${encodeURIComponent(
+                                    promptText || "Document généré par l'IA"
+                                  )}&type=${selectedGenerator.id}${
+                                    selectedGenerator.id === "translate" ? `&lang=${selectedLanguage}` : ""
+                                  }`
+                                );
+                                setSelectedGenerator(null);
+                              } catch {
+                                toast.error("Erreur de création de la page");
+                              }
+                            }}
+                            disabled={isAiStreaming || !generatorInputs[selectedGenerator.id]?.trim()}
+                            className="text-xs h-9 bg-violet-600 hover:bg-violet-700 text-white justify-center gap-1 shadow-md shadow-violet-600/20"
+                          >
+                            Nouvelle page
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* --- 3. CODER ASSISTANT TAB --- */}
+              {aiActiveTab === "coder" && (
+                <div className="space-y-4">
+                  <div className="space-y-1 bg-violet-600/5 rounded-xl border border-violet-500/15 p-3">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-violet-500">
+                      <Cpu className="h-4 w-4" /> Assistant Développeur
+                    </div>
+                    <p className="text-[10px] text-muted-foreground leading-normal">
+                      Mistral analyse votre code, explique des algorithmes, corrige des bugs ou génère des tests unitaires robustes.
+                    </p>
+                  </div>
+
+                  {/* Preconfigured Quick Prompt Buttons */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label: "Expliquer le code", prompt: "Explique ce code de manière exhaustive, ligne par ligne." },
+                      { label: "Trouver des bugs", prompt: "Analyse ce code, détecte les failles potentielles et propose des corrections." },
+                      { label: "Optimiser", prompt: "Optimise la structure de ce code pour de meilleures performances et une meilleure lisibilité." },
+                      { label: "Générer des tests", prompt: "Rédige une suite de tests unitaires complète pour ce code." },
+                    ].map((btn, i) => (
+                      <Button
+                        key={i}
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setAiPrompt(btn.prompt);
+                          toast.success("Prompt copié dans l'éditeur de texte !");
+                        }}
+                        className="text-[10px] h-8 justify-start font-semibold text-muted-foreground hover:text-foreground"
+                      >
+                        {btn.label}
+                      </Button>
+                    ))}
+                  </div>
+
+                  <div className="space-y-2 pt-2 border-t border-border/30">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                      Coller votre code / prompt technique
+                    </label>
+                    <div className="relative">
+                      <textarea
+                        rows={5}
+                        placeholder="Collez votre code ici ou posez une question technique..."
+                        value={aiPrompt}
+                        onChange={(e) => setAiPrompt(e.target.value)}
+                        className="w-full text-xs font-mono rounded-xl border border-border/80 bg-background/50 p-3 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition"
+                      />
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={() => {
+                      void handleAiAction("dev", {
+                        customPrompt: aiPrompt,
+                        directEditorInsert: false,
+                      });
+                    }}
+                    disabled={isAiStreaming || !aiPrompt.trim()}
+                    className="w-full text-xs h-9 bg-violet-600 hover:bg-violet-700 text-white font-bold justify-center gap-1.5 shadow-md shadow-violet-600/20"
+                  >
+                    {isAiStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Terminal className="h-4 w-4" />}
+                    Lancer l&apos;analyse code
+                  </Button>
+
+                  {/* Output block with option to insert code block directly */}
+                  {aiResponse && (
+                    <div className="space-y-2 pt-3 border-t border-border/40 animate-in fade-in duration-200">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                        <span>Réponse code</span>
+                        <button
+                          onClick={() => {
+                            handleInsertAtCursor(`<pre><code>${aiResponse.replace(/<[^>]*>/g, "")}</code></pre>`);
+                          }}
+                          className="text-[9px] text-violet-500 hover:underline hover:text-violet-400 font-black transition"
+                        >
+                          Insérer comme bloc de code
+                        </button>
+                      </div>
+                      <div className="rounded-xl border border-border/60 bg-muted/40 p-3.5 text-xs font-mono max-h-[220px] overflow-y-auto whitespace-pre-wrap leading-relaxed select-all">
+                        {aiResponse}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* --- 4. SUGGESTIONS TAB --- */}
+              {aiActiveTab === "suggest" && (
+                <div className="space-y-4">
+                  <div className="space-y-1 bg-amber-500/5 rounded-xl border border-amber-500/15 p-3">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-amber-500">
+                      <Compass className="h-4 w-4" /> Suggestions d&apos;Espace de Travail
+                    </div>
+                    <p className="text-[10px] text-muted-foreground leading-normal">
+                      Mistral analyse votre page active et l&apos;organisation globale pour vous proposer des sous-pages clés, des tags utiles et des conventions de structure documentaire optimisées.
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={() => {
+                      void handleAiAction("suggest", {
+                        customPrompt: `Analyse la page actuelle "${title}" pour proposer un plan d'organisation optimal de l'espace de travail.`,
+                        directEditorInsert: false,
+                      });
+                    }}
+                    disabled={isAiStreaming}
+                    className="w-full text-xs h-9 bg-amber-500 hover:bg-amber-600 text-white font-bold justify-center gap-1.5 shadow-md shadow-amber-500/20"
+                  >
+                    {isAiStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Compass className="h-4 w-4" />}
+                    Analyser l&apos;espace
+                  </Button>
+
+                  {/* Suggestion list render */}
+                  {aiResponse && (
+                    <div className="space-y-3 pt-3 border-t border-border/40 animate-in fade-in duration-200">
+                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                        Recommandations d&apos;Organisation
+                      </div>
+                      <div
+                        className="rounded-xl border bg-muted/30 p-4 text-xs leading-relaxed max-h-[300px] overflow-y-auto prose-xs prose-invert"
+                        dangerouslySetInnerHTML={{ __html: aiResponse }}
+                      />
+                      
+                      {/* Premium Fast-Create Actions next to recommendations */}
+                      <div className="rounded-xl border border-dashed border-border p-3.5 space-y-2.5">
+                        <h5 className="text-[10px] font-black uppercase text-muted-foreground">Création rapide conseillée</h5>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={async () => {
+                              try {
+                                const newPage = await createPage(page.workspaceId);
+                                toast.success("Sous-page créée ! Redirection...");
+                                router.push(`/app/page/${newPage.id}`);
+                              } catch {
+                                toast.error("Erreur lors de la création");
+                              }
+                            }}
+                            className="text-[10px] h-7 bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20 font-bold"
+                          >
+                            Créer une sous-page vide
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

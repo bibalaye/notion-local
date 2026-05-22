@@ -14,8 +14,33 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NotoFlow",
-  description: "Clone Notion SaaS — fondations production-ready",
+  title: {
+    default: "NotoFlow",
+    template: "%s — NotoFlow",
+  },
+  description: "Votre espace de productivité intelligent propulsé par Mistral AI. Notes, bases de données, wikis et collaboration en temps réel.",
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/icons/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/favicon-48.png", sizes: "48x48", type: "image/png" },
+      { url: "/icons/favicon-64.png", sizes: "64x64", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/icons/icon-152.png", sizes: "152x152", type: "image/png" },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "NotoFlow",
+  },
+  other: {
+    "msapplication-TileColor": "#0a0a0a",
+    "msapplication-config": "/browserconfig.xml",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

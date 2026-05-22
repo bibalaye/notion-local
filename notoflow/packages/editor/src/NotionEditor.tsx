@@ -75,6 +75,7 @@ export type NotionEditorProps = {
   onCursorChange?: (pos: number) => void;
   collaborativeCursors?: { id: string; name: string; color: string; pos: number }[];
   onTriggerAI?: (editorInstance: any) => void;
+  onEditorReady?: (editorInstance: any) => void;
 };
 
 export function NotionEditor({
@@ -85,6 +86,7 @@ export function NotionEditor({
   onCursorChange,
   collaborativeCursors = [],
   onTriggerAI,
+  onEditorReady,
 }: NotionEditorProps) {
   // Slash menu state
   const [showMenu, setShowMenu] = useState(false);
@@ -251,6 +253,9 @@ export function NotionEditor({
         }
         return false;
       },
+    },
+    onCreate: ({ editor }) => {
+      onEditorReady?.(editor);
     },
     onUpdate: ({ editor }) => {
       onChange?.(editor.getJSON());
