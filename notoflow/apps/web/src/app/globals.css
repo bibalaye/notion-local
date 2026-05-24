@@ -5,46 +5,46 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --foreground: 40 6% 20%; /* Noir-chaud #37352F */
+    --card: 40 15% 98.5%; /* Beige/gris-chaud ultra-doux de la sidebar Notion #FBFBFA */
+    --card-foreground: 40 6% 20%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
+    --popover-foreground: 40 6% 20%;
+    --primary: 40 6% 20%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --secondary: 40 6% 96%; /* Gris clair secondaire #F4F4F2 */
+    --secondary-foreground: 40 6% 20%;
+    --muted: 40 6% 96%;
+    --muted-foreground: 40 6% 45%; /* Gris-chaud moyen #7C7B77 */
+    --accent: 40 6% 93.5%; /* Hover délicat Notion #EFEFED */
+    --accent-foreground: 40 6% 20%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --radius: 0.625rem;
+    --border: 40 6% 90%; /* Bordure très fine et discrète #EDECE9 */
+    --input: 40 6% 90%;
+    --ring: 40 6% 45%;
+    --radius: 0.375rem; /* Coins légèrement plus carrés et fins style Notion (6px) */
   }
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 5%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 5%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --background: 0 0% 10%; /* Noir profond de Notion #191919 */
+    --foreground: 0 0% 90%; /* Blanc adouci */
+    --card: 0 0% 12.5%; /* Gris foncé de la sidebar #202020 */
+    --card-foreground: 0 0% 90%;
+    --popover: 0 0% 14.5%; /* Popovers légèrement surélevés #252525 */
+    --popover-foreground: 0 0% 90%;
+    --primary: 0 0% 90%;
+    --primary-foreground: 0 0% 10%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 90%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 17%;
+    --accent-foreground: 0 0% 90%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --border: 0 0% 17%; /* Bordure sombre discrète #2B2B2B */
+    --input: 0 0% 17%;
+    --ring: 0 0% 60%;
   }
 }
 

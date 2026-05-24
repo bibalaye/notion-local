@@ -389,93 +389,93 @@ export function NotionEditor({
       {editor && (
         <BubbleMenu
           editor={editor}
-          tippyOptions={{ duration: 100 }}
-          className="flex flex-col rounded-xl border border-border/80 bg-popover/95 p-1 shadow-2xl backdrop-blur-md max-w-sm"
+          tippyOptions={{ duration: 80 }}
+          className="flex flex-col rounded-lg border border-border/30 bg-popover/90 p-0.5 shadow-[0_12px_30px_-4px_rgba(0,0,0,0.1),0_8px_16px_-4px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_30px_-4px_rgba(0,0,0,0.4),0_8px_16px_-4px_rgba(0,0,0,0.3)] backdrop-blur-xl max-w-sm"
         >
           {/* Main Toolbar */}
-          <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-none">
+          <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-none px-0.5 py-0.5 select-none">
             {/* Block Type Transform Selector */}
             <button
               type="button"
               onClick={() => setBubbleSubmenu(bubbleSubmenu === "block" ? "none" : "block")}
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 ${
-                bubbleSubmenu === "block" ? "bg-accent text-accent-foreground" : "text-foreground/80"
+              className={`flex items-center gap-1 px-2 py-1 rounded hover:bg-accent text-xs font-bold transition-colors shrink-0 cursor-pointer focus:outline-none ${
+                bubbleSubmenu === "block" ? "bg-accent text-foreground" : "text-foreground/80"
               }`}
             >
               <span>{getActiveBlockLabel()}</span>
-              <ChevronDown className="h-3 w-3 opacity-60" />
+              <ChevronDown className="h-3.5 w-3.5 opacity-40 shrink-0 stroke-[1.8]" />
             </button>
 
-            <div className="h-4 w-[1px] bg-border/80 mx-1 shrink-0" />
+            <div className="h-3.5 w-[1px] bg-border/40 mx-0.5 shrink-0" />
 
             {/* Standard Formatting buttons */}
             <button
               type="button"
               onClick={() => editor.chain().focus().toggleBold().run()}
-              className={`p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 ${
-                editor.isActive("bold") ? "bg-accent text-accent-foreground" : "text-foreground/70"
+              className={`p-1 rounded hover:bg-accent transition-colors shrink-0 cursor-pointer focus:outline-none ${
+                editor.isActive("bold") ? "bg-accent text-foreground font-bold" : "text-foreground/70"
               }`}
               title="Gras"
             >
-              <Bold className="h-3.5 w-3.5" />
+              <Bold className="h-3.5 w-3.5 stroke-[1.8]" />
             </button>
 
             <button
               type="button"
               onClick={() => editor.chain().focus().toggleItalic().run()}
-              className={`p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 ${
-                editor.isActive("italic") ? "bg-accent text-accent-foreground" : "text-foreground/70"
+              className={`p-1 rounded hover:bg-accent transition-colors shrink-0 cursor-pointer focus:outline-none ${
+                editor.isActive("italic") ? "bg-accent text-foreground" : "text-foreground/70"
               }`}
               title="Italique"
             >
-              <Italic className="h-3.5 w-3.5" />
+              <Italic className="h-3.5 w-3.5 stroke-[1.8]" />
             </button>
 
             <button
               type="button"
               onClick={() => editor.chain().focus().toggleUnderline().run()}
-              className={`p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 ${
-                editor.isActive("underline") ? "bg-accent text-accent-foreground" : "text-foreground/70"
+              className={`p-1 rounded hover:bg-accent transition-colors shrink-0 cursor-pointer focus:outline-none ${
+                editor.isActive("underline") ? "bg-accent text-foreground" : "text-foreground/70"
               }`}
               title="Souligné"
             >
-              <UnderlineIcon className="h-3.5 w-3.5" />
+              <UnderlineIcon className="h-3.5 w-3.5 stroke-[1.8]" />
             </button>
 
             <button
               type="button"
               onClick={() => editor.chain().focus().toggleStrike().run()}
-              className={`p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 ${
-                editor.isActive("strike") ? "bg-accent text-accent-foreground" : "text-foreground/70"
+              className={`p-1 rounded hover:bg-accent transition-colors shrink-0 cursor-pointer focus:outline-none ${
+                editor.isActive("strike") ? "bg-accent text-foreground" : "text-foreground/70"
               }`}
               title="Barré"
             >
-              <Strikethrough className="h-3.5 w-3.5" />
+              <Strikethrough className="h-3.5 w-3.5 stroke-[1.8]" />
             </button>
 
             <button
               type="button"
               onClick={() => editor.chain().focus().toggleCode().run()}
-              className={`p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 ${
-                editor.isActive("code") ? "bg-accent text-accent-foreground" : "text-foreground/70"
+              className={`p-1 rounded hover:bg-accent transition-colors shrink-0 cursor-pointer focus:outline-none ${
+                editor.isActive("code") ? "bg-accent text-foreground" : "text-foreground/70"
               }`}
               title="Code en ligne"
             >
-              <Code className="h-3.5 w-3.5" />
+              <Code className="h-3.5 w-3.5 stroke-[1.8]" />
             </button>
 
-            <div className="h-4 w-[1px] bg-border/80 mx-1 shrink-0" />
+            <div className="h-3.5 w-[1px] bg-border/40 mx-0.5 shrink-0" />
 
             {/* Color picker */}
             <button
               type="button"
               onClick={() => setBubbleSubmenu(bubbleSubmenu === "color" ? "none" : "color")}
-              className={`p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 ${
-                bubbleSubmenu === "color" ? "bg-accent text-accent-foreground" : "text-foreground/70"
+              className={`p-1 rounded hover:bg-accent transition-colors shrink-0 cursor-pointer focus:outline-none ${
+                bubbleSubmenu === "color" ? "bg-accent text-foreground" : "text-foreground/70"
               }`}
               title="Couleur"
             >
-              <Palette className="h-3.5 w-3.5" />
+              <Palette className="h-3.5 w-3.5 stroke-[1.8]" />
             </button>
 
             {/* AI Assistant selection command */}
@@ -484,47 +484,47 @@ export function NotionEditor({
               onClick={() => {
                 if (onTriggerAI) onTriggerAI(editor);
               }}
-              className="p-1.5 rounded-lg text-violet-600 dark:text-violet-400 hover:bg-violet-500/10 transition-colors shrink-0"
+              className="p-1 rounded text-violet-500 hover:bg-violet-500/10 transition-colors shrink-0 cursor-pointer focus:outline-none"
               title="Demander à l'IA"
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3.5 w-3.5 stroke-[1.8]" />
             </button>
 
-            <div className="h-4 w-[1px] bg-border/80 mx-1 shrink-0" />
+            <div className="h-3.5 w-[1px] bg-border/40 mx-0.5 shrink-0" />
 
             {/* Copy link / Duplicate / Delete */}
             <button
               type="button"
               onClick={copyText}
-              className="p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 text-foreground/70"
+              className="p-1 rounded hover:bg-accent transition-colors shrink-0 text-foreground/70 cursor-pointer focus:outline-none"
               title="Copier le texte"
             >
-              <Copy className="h-3.5 w-3.5" />
+              <Copy className="h-3.5 w-3.5 stroke-[1.8]" />
             </button>
 
             <button
               type="button"
               onClick={duplicateBlock}
-              className="p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 text-foreground/70"
+              className="p-1 rounded hover:bg-accent transition-colors shrink-0 text-foreground/70 cursor-pointer focus:outline-none"
               title="Dupliquer"
             >
-              <ChevronDown className="h-3.5 w-3.5 rotate-180" />
+              <ChevronDown className="h-3.5 w-3.5 rotate-180 stroke-[1.8]" />
             </button>
 
             <button
               type="button"
               onClick={deleteSelection}
-              className="p-1.5 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0 text-foreground/70"
+              className="p-1 rounded hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0 text-foreground/70 cursor-pointer focus:outline-none"
               title="Supprimer"
             >
-              <Trash className="h-3.5 w-3.5" />
+              <Trash className="h-3.5 w-3.5 stroke-[1.8]" />
             </button>
           </div>
 
           {/* Submenus Panels */}
           {bubbleSubmenu === "block" && (
-            <div className="border-t border-border/40 mt-1 pt-1 max-h-[220px] overflow-y-auto w-full space-y-0.5 animate-fade-in">
-              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2.5 py-1">
+            <div className="border-t border-border/30 mt-0.5 pt-0.5 max-h-[220px] overflow-y-auto w-full space-y-0.5 animate-fade-in p-1 select-none">
+              <div className="text-[9px] font-extrabold text-muted-foreground/60 uppercase tracking-widest px-2 py-1">
                 Transformer en
               </div>
               {blockTypes.map((t) => (
@@ -535,11 +535,11 @@ export function NotionEditor({
                     t.action();
                     setBubbleSubmenu("none");
                   }}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-xs transition-colors ${
-                    t.active() ? "bg-accent text-accent-foreground font-semibold" : "hover:bg-accent/40 text-foreground/90"
+                  className={`w-full flex items-center gap-2 px-2 py-1 rounded text-left text-xs transition-colors cursor-pointer ${
+                    t.active() ? "bg-accent text-foreground font-semibold" : "hover:bg-accent/50 text-foreground/80"
                   }`}
                 >
-                  <span className="text-sm shrink-0 w-4 text-center">{t.icon}</span>
+                  <span className="text-xs shrink-0 w-4 text-center">{t.icon}</span>
                   <span>{t.label}</span>
                 </button>
               ))}
@@ -547,11 +547,11 @@ export function NotionEditor({
           )}
 
           {bubbleSubmenu === "color" && (
-            <div className="border-t border-border/40 mt-1 pt-1 max-h-[250px] overflow-y-auto w-full grid grid-cols-2 gap-2 p-2 animate-fade-in">
+            <div className="border-t border-border/30 mt-0.5 pt-0.5 max-h-[250px] overflow-y-auto w-full grid grid-cols-2 gap-2 p-1.5 animate-fade-in select-none">
               {/* Text color column */}
-              <div className="space-y-1">
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">
-                  Couleur du texte
+              <div className="space-y-0.5">
+                <div className="text-[9px] font-extrabold text-muted-foreground/60 uppercase tracking-widest px-1.5 py-1">
+                  Texte
                 </div>
                 {colors.map((c) => (
                   <button
@@ -565,19 +565,19 @@ export function NotionEditor({
                       }
                       setBubbleSubmenu("none");
                     }}
-                    className="w-full flex items-center gap-2 px-2 py-1 rounded-md text-left text-xs hover:bg-accent/50 text-foreground/90"
+                    className="w-full flex items-center gap-2 px-1.5 py-1 rounded text-left text-xs hover:bg-accent/50 text-foreground/80 cursor-pointer"
                   >
-                    <span className={`w-3.5 h-3.5 rounded-full border border-border/40 flex items-center justify-center font-bold text-[9px] ${c.color}`}>
+                    <span className={`w-3.5 h-3.5 rounded-full border border-neutral-300/20 flex items-center justify-center font-bold text-[8px] bg-neutral-100 dark:bg-neutral-800 ${c.color}`}>
                       A
                     </span>
-                    <span>{c.label}</span>
+                    <span className="font-medium text-[11px]">{c.label}</span>
                   </button>
                 ))}
               </div>
 
               {/* Background color column */}
-              <div className="space-y-1">
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">
+              <div className="space-y-0.5">
+                <div className="text-[9px] font-extrabold text-muted-foreground/60 uppercase tracking-widest px-1.5 py-1">
                   Surlignage
                 </div>
                 {highlights.map((h) => (
@@ -592,10 +592,10 @@ export function NotionEditor({
                       }
                       setBubbleSubmenu("none");
                     }}
-                    className="w-full flex items-center gap-2 px-2 py-1 rounded-md text-left text-xs hover:bg-accent/50 text-foreground/90"
+                    className="w-full flex items-center gap-2 px-1.5 py-1 rounded text-left text-xs hover:bg-accent/50 text-foreground/80 cursor-pointer"
                   >
-                    <span className={`w-3.5 h-3.5 rounded border border-border/40 ${h.color}`} />
-                    <span>{h.label}</span>
+                    <span className={`w-3.5 h-3.5 rounded border border-neutral-300/20 ${h.color}`} />
+                    <span className="font-medium text-[11px]">{h.label}</span>
                   </button>
                 ))}
               </div>

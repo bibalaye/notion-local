@@ -87,76 +87,68 @@ export function PageTree({ pages }: { pages: Page[] }) {
     return (
       <div key={page.id} className="group/item select-none">
         <div
-          className={`flex items-center gap-1 py-1 px-2 rounded-lg text-sm transition-colors duration-150 relative ${
+          className={`flex items-center gap-1 py-1 px-2.5 rounded-md text-xs transition-colors duration-100 relative ${
             isActive
-              ? "bg-accent/80 text-accent-foreground font-medium"
-              : "text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+              ? "bg-accent text-foreground font-semibold"
+              : "text-foreground/75 hover:bg-accent/50 hover:text-foreground"
           }`}
-          style={{ paddingLeft: `${depth * 12 + 8}px` }}
+          style={{ paddingLeft: `${depth * 10 + 6}px` }}
         >
           {/* Collapse/Expand Arrow */}
           <button
             onClick={(e) => toggleExpand(page.id, e)}
-            className={`h-5 w-5 flex items-center justify-center rounded hover:bg-accent-foreground/10 transition-colors ${
+            className={`h-4.5 w-4.5 flex items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 transition-colors text-muted-foreground/80 hover:text-foreground cursor-pointer focus:outline-none ${
               !hasChildren ? "opacity-0 pointer-events-none" : ""
             }`}
             type="button"
           >
             {isExpanded ? (
-              <ChevronDown className="h-3 w-3 shrink-0" />
+              <ChevronDown className="h-3 w-3 shrink-0 stroke-[2]" />
             ) : (
-              <ChevronRight className="h-3 w-3 shrink-0" />
+              <ChevronRight className="h-3 w-3 shrink-0 stroke-[2]" />
             )}
           </button>
 
           {/* Page link */}
-          <Link href={`/app/page/${page.id}`} className="flex-1 flex items-center gap-1.5 min-w-0 py-0.5">
-            <span className="shrink-0">{page.icon ?? "📄"}</span>
-            <span className="truncate">{page.title || "Sans titre"}</span>
+          <Link href={`/app/page/${page.id}`} className="flex-1 flex items-center gap-1.5 min-w-0 py-0.5 cursor-pointer">
+            <span className="shrink-0 text-[13px]">{page.icon ?? "📄"}</span>
+            <span className="truncate tracking-tight text-foreground/80">{page.title || "Sans titre"}</span>
           </Link>
 
           {/* Inline Hover Action Buttons */}
-          <div className="absolute right-2 opacity-0 group-hover/item:opacity-100 flex items-center gap-0.5 bg-gradient-to-l from-accent/90 via-accent/80 to-transparent pl-4 rounded-r-lg">
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-6 w-6 text-muted-foreground hover:text-foreground"
+          <div className="absolute right-1 px-1.5 opacity-0 group-hover/item:opacity-100 flex items-center gap-0.5 bg-gradient-to-l from-accent via-accent to-transparent pl-4 rounded-r-md">
+            <button
+              className="h-5 w-5 flex items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 text-muted-foreground/75 hover:text-foreground transition-colors cursor-pointer focus:outline-none"
               onClick={() => favoriteMutation.mutate(page.id)}
               title="Ajouter aux favoris"
               type="button"
             >
-              <Star className="h-3 w-3" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-6 w-6 text-muted-foreground hover:text-foreground"
+              <Star className="h-3 w-3 stroke-[1.8]" />
+            </button>
+            <button
+              className="h-5 w-5 flex items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 text-muted-foreground/75 hover:text-foreground transition-colors cursor-pointer focus:outline-none"
               onClick={() => createMutation.mutate(page.id)}
               title="Ajouter une sous-page"
               type="button"
             >
-              <Plus className="h-3 w-3" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-6 w-6 text-muted-foreground hover:text-foreground"
+              <Plus className="h-3 w-3 stroke-[1.8]" />
+            </button>
+            <button
+              className="h-5 w-5 flex items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 text-muted-foreground/75 hover:text-foreground transition-colors cursor-pointer focus:outline-none"
               onClick={() => duplicateMutation.mutate(page.id)}
               title="Dupliquer"
               type="button"
             >
-              <Copy className="h-3 w-3" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-6 w-6 text-muted-foreground hover:text-destructive"
+              <Copy className="h-3 w-3 stroke-[1.8]" />
+            </button>
+            <button
+              className="h-5 w-5 flex items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 text-muted-foreground/75 hover:text-destructive transition-colors cursor-pointer focus:outline-none"
               onClick={() => archiveMutation.mutate(page.id)}
               title="Mettre à la corbeille"
               type="button"
             >
-              <Trash2 className="h-3 w-3" />
-            </Button>
+              <Trash2 className="h-3 w-3 stroke-[1.8]" />
+            </button>
           </div>
         </div>
 

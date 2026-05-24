@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Sparkles, Star, Clock, Plus, Database, Settings, ArrowRight } from "lucide-react";
 import { Button } from "@notoflow/ui/components/button";
 import { QuickAiActions } from "@/components/ai/QuickAiActions";
+import { CreatePageButton } from "@/components/layout/CreatePageButton";
 
 export default async function AppHomePage() {
   const profile = await getOrCreateProfile();
@@ -35,20 +36,21 @@ export default async function AppHomePage() {
     : [];
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10 space-y-10">
+    <div className="max-w-4xl mx-auto px-6 py-12 space-y-12 select-none">
       {/* Greeting Banner */}
-      <div className="rounded-3xl border border-border/50 bg-gradient-to-br from-indigo-500/10 via-background to-background p-8 relative overflow-hidden shadow-sm">
-        <div className="absolute top-0 right-0 h-40 w-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="space-y-2 max-w-lg">
-          <div className="inline-flex items-center gap-1 bg-indigo-500/10 text-indigo-500 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
-            <Sparkles className="h-3 w-3" /> Espace de travail actif : {workspace?.name || "NotoFlow"}
-          </div>
-          <h1 className="text-3xl font-extrabold tracking-tight">
+      <div className="relative pb-4 border-b border-border/30">
+        <div className="space-y-3">
+          <div className="text-4xl">👋</div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground/90 font-sans">
             Bonjour, {profile?.name || profile?.email?.split("@")[0] || "utilisateur"} !
           </h1>
-          <p className="text-sm text-muted-foreground leading-normal">
-            Bienvenue sur votre espace de productivité. Créez des notes, organisez des bases de données ou utilisez l&apos;intelligence artificielle.
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-xl font-medium">
+            Bienvenue sur votre espace de travail personnel. Organisez vos idées, collaborez avec votre équipe et libérez votre productivité grâce à l&apos;intelligence artificielle.
           </p>
+          <div className="inline-flex items-center gap-1.5 rounded-md bg-neutral-100 dark:bg-neutral-800/40 px-2.5 py-1 border border-border/20 text-[11px] font-semibold text-muted-foreground">
+            <Sparkles className="h-3 w-3 text-indigo-500" />
+            <span>Espace de travail : <strong className="text-foreground/80 font-bold">{workspace?.name || "NotoFlow"}</strong></span>
+          </div>
         </div>
       </div>
 
@@ -57,47 +59,43 @@ export default async function AppHomePage() {
         {/* Shortcut 1 */}
         <Link
           href={`/app/databases`}
-          className="group rounded-2xl border border-border/50 bg-card p-5 hover:bg-accent/40 shadow-sm transition-all duration-150 flex items-center justify-between"
+          className="group rounded-xl border border-border/40 bg-card/40 p-5 hover:bg-accent/60 shadow-sm transition-all duration-150 flex items-center justify-between cursor-pointer focus:outline-none"
         >
-          <div className="space-y-1.5">
-            <div className="h-9 w-9 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
-              <Database className="h-5 w-5" />
+          <div className="space-y-2">
+            <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+              <Database className="h-4.5 w-4.5 stroke-[1.8]" />
             </div>
-            <h3 className="text-xs font-bold text-foreground">Bases de données</h3>
-            <p className="text-[10px] text-muted-foreground">Tables et Kanbans</p>
+            <h3 className="text-xs font-bold text-foreground/90">Bases de données</h3>
+            <p className="text-[10px] text-muted-foreground font-medium">Créez des tables et des Kanbans</p>
           </div>
-          <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
+          <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all duration-150 text-muted-foreground shrink-0 translate-x-[-4px] group-hover:translate-x-0" />
         </Link>
 
         {/* Shortcut 2 */}
-        <div className="rounded-2xl border border-border/50 bg-card p-5 shadow-sm flex flex-col justify-between">
-          <div className="space-y-1.5 mb-3">
-            <div className="h-9 w-9 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-              <Plus className="h-5 w-5" />
+        <div className="rounded-xl border border-border/40 bg-card/40 p-5 shadow-sm flex flex-col justify-between">
+          <div className="space-y-2 mb-3">
+            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+              <Plus className="h-4.5 w-4.5 stroke-[1.8]" />
             </div>
-            <h3 className="text-xs font-bold text-foreground">Créer un document</h3>
-            <p className="text-[10px] text-muted-foreground">Notes ou wiki de projet</p>
+            <h3 className="text-xs font-bold text-foreground/90">Créer un document</h3>
+            <p className="text-[10px] text-muted-foreground font-medium">Rédigez des notes ou des wikis</p>
           </div>
-          <Button size="sm" variant="ghost" className="w-full text-xs justify-start h-8 p-0" asChild>
-            <Link href="/app">
-              <span>Nouveau document</span>
-            </Link>
-          </Button>
+          <CreatePageButton className="w-full flex items-center justify-center h-8 rounded-lg bg-neutral-200/50 hover:bg-neutral-200/80 dark:bg-neutral-800/40 dark:hover:bg-neutral-800/70 text-xs font-semibold text-foreground/80 hover:text-foreground transition-colors cursor-pointer focus:outline-none" />
         </div>
 
         {/* Shortcut 3 */}
         <Link
           href="/app/settings"
-          className="group rounded-2xl border border-border/50 bg-card p-5 hover:bg-accent/40 shadow-sm transition-all duration-150 flex items-center justify-between"
+          className="group rounded-xl border border-border/40 bg-card/40 p-5 hover:bg-accent/60 shadow-sm transition-all duration-150 flex items-center justify-between cursor-pointer focus:outline-none"
         >
-          <div className="space-y-1.5">
-            <div className="h-9 w-9 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500">
-              <Settings className="h-5 w-5" />
+          <div className="space-y-2">
+            <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500">
+              <Settings className="h-4.5 w-4.5 stroke-[1.8]" />
             </div>
-            <h3 className="text-xs font-bold text-foreground">Configuration</h3>
-            <p className="text-[10px] text-muted-foreground">Membres et abonnements</p>
+            <h3 className="text-xs font-bold text-foreground/90">Configuration</h3>
+            <p className="text-[10px] text-muted-foreground font-medium">Gérez vos membres et abonnements</p>
           </div>
-          <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
+          <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all duration-150 text-muted-foreground shrink-0 translate-x-[-4px] group-hover:translate-x-0" />
         </Link>
       </div>
 
@@ -105,32 +103,32 @@ export default async function AppHomePage() {
       {workspace && <QuickAiActions workspaceId={workspace.id} />}
 
       {/* Lists Segment */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-2">
         {/* Recent pages */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-            <Clock className="h-3.5 w-3.5" /> Pages récentes
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/75 uppercase tracking-widest">
+            <Clock className="h-3.5 w-3.5 stroke-[1.8]" /> Pages récentes
           </div>
           {recentPages.length === 0 ? (
-            <div className="p-6 text-center text-xs text-muted-foreground border border-dashed rounded-2xl">
-              Aucune page récente.
+            <div className="p-8 text-center text-xs text-muted-foreground/80 border border-dashed border-border/40 rounded-xl bg-card/10">
+              Aucune page consultée récemment.
             </div>
           ) : (
-            <div className="border border-border/40 rounded-2xl bg-card/45 overflow-hidden divide-y divide-border/25">
+            <div className="border border-border/30 rounded-xl bg-card/25 overflow-hidden divide-y divide-border/20 shadow-sm">
               {recentPages.map((page) => (
                 <Link
                   key={page.id}
                   href={`/app/page/${page.id}`}
-                  className="flex items-center justify-between p-4 hover:bg-accent/25 transition-colors"
+                  className="flex items-center justify-between p-4 hover:bg-accent/50 transition-colors duration-100 cursor-pointer"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-base">{page.icon || "📄"}</span>
-                    <span className="text-xs font-bold text-foreground truncate max-w-[200px]">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-base shrink-0">{page.icon || "📄"}</span>
+                    <span className="text-xs font-semibold text-foreground/80 truncate max-w-[200px]">
                       {page.title || "Sans titre"}
                     </span>
                   </div>
-                  <span className="text-[9px] text-muted-foreground font-medium">
-                    Modifié le {new Date(page.updatedAt).toLocaleDateString("fr-FR")}
+                  <span className="text-[9px] text-muted-foreground/60 font-semibold shrink-0">
+                    {new Date(page.updatedAt).toLocaleDateString("fr-FR")}
                   </span>
                 </Link>
               ))}
@@ -139,24 +137,24 @@ export default async function AppHomePage() {
         </div>
 
         {/* Favorites */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-            <Star className="h-3.5 w-3.5 text-amber-500" /> Favoris
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/75 uppercase tracking-widest">
+            <Star className="h-3.5 w-3.5 text-amber-500 stroke-[1.8]" /> Vos favoris
           </div>
           {favorites.length === 0 ? (
-            <div className="p-6 text-center text-xs text-muted-foreground border border-dashed rounded-2xl">
-              Marquez des pages d&apos;une étoile pour les retrouver ici.
+            <div className="p-8 text-center text-xs text-muted-foreground/80 border border-dashed border-border/40 rounded-xl bg-card/10">
+              Marquez vos pages d&apos;une étoile pour les épingler ici.
             </div>
           ) : (
-            <div className="border border-border/40 rounded-2xl bg-card/45 overflow-hidden divide-y divide-border/25">
+            <div className="border border-border/30 rounded-xl bg-card/25 overflow-hidden divide-y divide-border/20 shadow-sm">
               {favorites.map((fav) => (
                 <Link
                   key={fav.id}
                   href={`/app/page/${fav.page.id}`}
-                  className="flex items-center gap-3 p-4 hover:bg-accent/25 transition-colors"
+                  className="flex items-center gap-3 p-4 hover:bg-accent/50 transition-colors duration-100 cursor-pointer"
                 >
-                  <span className="text-base">{fav.page.icon || "📄"}</span>
-                  <span className="text-xs font-bold text-foreground truncate">
+                  <span className="text-base shrink-0">{fav.page.icon || "📄"}</span>
+                  <span className="text-xs font-semibold text-foreground/80 truncate">
                     {fav.page.title || "Sans titre"}
                   </span>
                 </Link>

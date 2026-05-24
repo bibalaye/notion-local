@@ -70,20 +70,21 @@ export function WorkspaceSwitcher() {
 
   return (
     <div className="relative">
-      <Button
-        variant="outline"
+      <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full justify-between border-border/50 bg-background/50 hover:bg-accent/40 shadow-sm transition-all duration-200"
+        className="w-full flex items-center justify-between gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-sm font-semibold text-foreground/90 hover:bg-accent/60 transition-colors duration-150 cursor-pointer focus:outline-none"
         type="button"
       >
-        <span className="truncate text-sm font-semibold flex items-center gap-2">
-          <span className="flex h-5 w-5 items-center justify-center rounded bg-primary text-[10px] font-extrabold text-primary-foreground shadow">
+        <span className="truncate flex items-center gap-2">
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 text-[10px] font-extrabold shadow-sm border border-neutral-300/20">
             {activeWorkspace?.name?.charAt(0) || "N"}
           </span>
-          {activeWorkspace?.name || "Espace de travail"}
+          <span className="truncate font-semibold tracking-tight text-foreground/90 text-sm">
+            {activeWorkspace?.name || "Espace de travail"}
+          </span>
         </span>
-        <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0" />
-      </Button>
+        <ChevronsUpDown className="h-3.5 w-3.5 opacity-40 shrink-0 stroke-[1.8]" />
+      </button>
 
       {/* Popover Dropdown */}
       <AnimatePresence>
@@ -96,45 +97,45 @@ export function WorkspaceSwitcher() {
               initial={{ opacity: 0, y: -4, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -4, scale: 0.98 }}
-              transition={{ duration: 0.15 }}
-              className="absolute left-0 right-0 top-[42px] z-50 rounded-xl border border-border bg-popover p-1.5 shadow-xl"
+              transition={{ duration: 0.12, ease: "easeOut" }}
+              className="absolute left-0 right-0 top-[38px] z-50 rounded-lg border border-border bg-popover/95 backdrop-blur-md p-1 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5),0_8px_10px_-6px_rgba(0,0,0,0.5)]"
             >
-              <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1.5">
+              <div className="text-[9px] font-extrabold text-muted-foreground/75 uppercase tracking-widest px-2.5 py-1.5">
                 Espaces de travail
               </div>
 
-              <div className="space-y-0.5 max-h-[220px] overflow-y-auto">
+              <div className="space-y-0.5 max-h-[220px] overflow-y-auto px-0.5">
                 {workspaces?.map((ws) => (
                   <button
                     key={ws.id}
                     onClick={() => handleSelectWorkspace(ws.id)}
-                    className="w-full flex items-center justify-between rounded-lg px-2 py-1.5 text-sm hover:bg-accent text-left transition-colors duration-150"
+                    className="w-full flex items-center justify-between rounded-md px-2 py-1.5 text-xs hover:bg-accent text-left transition-colors duration-100 cursor-pointer"
                     type="button"
                   >
-                    <span className="truncate flex items-center gap-2 font-medium">
-                      <span className="flex h-5 w-5 items-center justify-center rounded bg-primary/10 text-primary text-[10px] font-bold">
+                    <span className="truncate flex items-center gap-2 font-medium text-foreground/80">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-neutral-100 dark:bg-neutral-800 text-foreground text-[10px] font-bold border border-neutral-300/10">
                         {ws.name.charAt(0)}
                       </span>
-                      {ws.name}
+                      <span className="truncate">{ws.name}</span>
                     </span>
                     {activeWorkspace?.id === ws.id && (
-                      <Check className="h-4 w-4 text-primary shrink-0" />
+                      <Check className="h-3.5 w-3.5 text-foreground shrink-0 stroke-[2]" />
                     )}
                   </button>
                 ))}
               </div>
 
-              <div className="border-t border-border/50 my-1" />
+              <div className="border-t border-border/40 my-1 mx-1" />
 
               <button
                 onClick={() => {
                   setIsOpen(false);
                   setIsDialogOpen(true);
                 }}
-                className="w-full flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-accent text-left text-muted-foreground hover:text-foreground font-medium transition-colors duration-150"
+                className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-accent text-left text-muted-foreground hover:text-foreground font-medium transition-colors duration-100 cursor-pointer"
                 type="button"
               >
-                <Plus className="h-4 w-4 shrink-0" />
+                <Plus className="h-3.5 w-3.5 shrink-0 stroke-[1.8]" />
                 <span>Créer un espace</span>
               </button>
             </motion.div>
