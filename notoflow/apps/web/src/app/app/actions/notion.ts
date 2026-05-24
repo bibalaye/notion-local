@@ -28,6 +28,20 @@ const highlightColorMap: Record<string, string> = {
   red_background: "#fdebeb",
 };
 
+async function convertImageToDataUrl(url: string): Promise<string> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return url;
+    const arrayBuffer = await res.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const contentType = res.headers.get("content-type") || "image/png";
+    return `data:${contentType};base64,${buffer.toString("base64")}`;
+  } catch (error) {
+    console.error("Error converting image to data URL:", error);
+    return url;
+  }
+}
+
 function getNotionTitle(item: any): string {
   if (item.object === "database") {
     return item.title?.map((t: any) => t.plain_text).join("") || "Sans titre";
@@ -238,8 +252,11 @@ async function translateBlock(block: any, token: string): Promise<any | null> {
         type: "horizontalRule",
       };
     case "image": {
-      const src = block.image.file?.url || block.image.external?.url;
+      let src = block.image.file?.url || block.image.external?.url;
       if (!src) return null;
+      if (block.image.file?.url) {
+        src = await convertImageToDataUrl(block.image.file.url);
+      }
       return {
         type: "image",
         attrs: { src },
@@ -272,6 +289,7 @@ async function translateBlock(block: any, token: string): Promise<any | null> {
         content: rowContent,
       };
     }
+    case "synced_block":
     case "column_list":
     case "column":
     case "toggle":
@@ -289,6 +307,62 @@ async function translateBlock(block: any, token: string): Promise<any | null> {
           {
             type: "paragraph",
             content: parseRichText(block.callout.rich_text),
+          },
+        ],
+      };
+    }
+    case "bookmark": {
+      const url = block.bookmark?.url;
+      if (!url) return null;
+      return {
+        type: "paragraph",
+        content: [
+          {
+            type: "text",
+            text: `🔗 Signet : ${url}`,
+            marks: [{ type: "link", attrs: { href: url, target: "_blank" } }],
+          },
+        ],
+      };
+    }
+    case "pdf": {
+      const url = block.pdf?.file?.url || block.pdf?.external?.url;
+      if (!url) return null;
+      return {
+        type: "paragraph",
+        content: [
+          {
+            type: "text",
+            text: `📎 Document PDF : ${url.split("/").pop()?.split("?")[0] || "PDF"}`,
+            marks: [{ type: "link", attrs: { href: url, target: "_blank" } }],
+          },
+        ],
+      };
+    }
+    case "file": {
+      const url = block.file?.file?.url || block.file?.external?.url;
+      if (!url) return null;
+      return {
+        type: "paragraph",
+        content: [
+          {
+            type: "text",
+            text: `📎 Fichier joint : ${url.split("/").pop()?.split("?")[0] || "Fichier"}`,
+            marks: [{ type: "link", attrs: { href: url, target: "_blank" } }],
+          },
+        ],
+      };
+    }
+    case "embed": {
+      const url = block.embed?.url;
+      if (!url) return null;
+      return {
+        type: "paragraph",
+        content: [
+          {
+            type: "text",
+            text: `🌐 Intégration : ${url}`,
+            marks: [{ type: "link", attrs: { href: url, target: "_blank" } }],
           },
         ],
       };
@@ -457,6 +531,9 @@ export async function importNotionPage(
   let coverUrl: string | null = null;
   if (notionPage.cover) {
     coverUrl = notionPage.cover.external?.url || notionPage.cover.file?.url || null;
+    if (notionPage.cover.file?.url) {
+      coverUrl = await convertImageToDataUrl(notionPage.cover.file.url);
+    }
   }
 
   const rawBlocks = await getNotionBlockChildren(pageId, token);

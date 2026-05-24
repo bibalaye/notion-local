@@ -34,6 +34,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<
     "profile" | "workspace" | "billing" | "integrations" | "developers"
   >("profile");
+  const [lastCreatedKey, setLastCreatedKey] = useState<{ name: string; rawToken: string } | null>(null);
 
   // Fetch active workspace details
   const { data: workspaces } = useQuery({
@@ -95,9 +96,10 @@ export default function SettingsPage() {
   const [newKeyName, setNewKeyName] = useState("");
   const createKeyMutation = useMutation({
     mutationFn: (name: string) => createApiKey(activeWorkspaceId || "", name),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       toast.success("Clé d'API créée avec succès !");
       setNewKeyName("");
+      setLastCreatedKey({ name: variables, rawToken: data.rawToken });
       queryClient.invalidateQueries({ queryKey: ["api-keys", activeWorkspaceId] });
     },
     onError: (err: any) => {
@@ -517,7 +519,7 @@ export default function SettingsPage() {
               <div>
                 <h3 className="text-sm font-bold text-foreground">Développeurs & Connecteur MCP</h3>
                 <p className="text-[11px] text-muted-foreground">
-                  Générez des clés d&apos;API sécurisées pour connecter vos outils de développement (Cursor, Windsurf) à NotoFlow.
+                  Générez des clés d&apos;API sécurisées pour connecter vos outils de développement (Cursor, Windsurf, Claude Desktop) à NotoFlow.
                 </p>
               </div>
 
@@ -525,7 +527,7 @@ export default function SettingsPage() {
               <form onSubmit={handleCreateApiKey} className="flex gap-2 max-w-md">
                 <input
                   required
-                  placeholder="Nom de la clé (ex: Cursor, Script de sauvegarde)..."
+                  placeholder="Nom de la clé (ex: Cursor, Claude Desktop)..."
                   value={newKeyName}
                   onChange={(e) => setNewKeyName(e.target.value)}
                   className="flex-1 rounded-lg border border-border bg-background/50 px-3 py-2 text-xs outline-none focus:border-foreground"
@@ -534,6 +536,62 @@ export default function SettingsPage() {
                   <Key className="h-3.5 w-3.5" /> Générer
                 </Button>
               </form>
+
+              {/* Affichage de la clé nouvellement créée (Une seule fois) */}
+              {lastCreatedKey && (
+                <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="flex gap-2 items-start">
+                    <Info className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                    <div className="text-xs space-y-1 text-muted-foreground">
+                      <p className="font-bold text-foreground text-amber-500">
+                        Copiez votre clé d&apos;API maintenant !
+                      </p>
+                      <p>
+                        Pour des raisons de sécurité, cette clé ne sera plus jamais affichée. Si vous la perdez, vous devrez la révoquer et en générer une nouvelle.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <code className="flex-1 bg-background border border-border px-3 py-2 rounded-lg text-xs font-mono text-amber-400 overflow-x-auto whitespace-nowrap scrollbar-none select-all">
+                      {lastCreatedKey.rawToken}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(lastCreatedKey.rawToken)}
+                      className="p-2 hover:bg-accent rounded-lg border border-border bg-background transition-colors text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none"
+                      title="Copier la clé brute"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <div className="space-y-2 pt-2 border-t border-border/20">
+                    <p className="text-[11px] font-bold text-foreground">Votre URL de connexion MCP unique (SSE) :</p>
+                    <div className="flex gap-2 items-center">
+                      <code className="flex-1 bg-background border border-border px-3 py-1.5 rounded-lg text-[10px] font-mono text-indigo-400 overflow-x-auto whitespace-nowrap scrollbar-none select-all">
+                        {getMcpUrl(lastCreatedKey.rawToken)}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(getMcpUrl(lastCreatedKey.rawToken))}
+                        className="p-2 hover:bg-accent rounded-lg border border-border bg-background transition-colors text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none"
+                        title="Copier l'URL MCP"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex justify-end pt-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setLastCreatedKey(null)}
+                      className="text-xs h-8 hover:bg-amber-500/10 hover:text-amber-500"
+                    >
+                      J&apos;ai copié la clé
+                    </Button>
+                  </div>
+                </div>
+              )}
 
               {/* API Keys list */}
               <div className="space-y-3 pt-2">
@@ -551,28 +609,25 @@ export default function SettingsPage() {
                       >
                         <div className="flex items-center justify-between">
                           <h4 className="text-xs font-bold text-foreground">{key.name}</h4>
-                          <span className="text-[10px] text-muted-foreground">
-                            Créée le {new Date(key.createdAt).toLocaleDateString("fr-FR")}
-                          </span>
+                          <div className="flex flex-col items-end text-[10px] text-muted-foreground space-y-0.5">
+                            <span>Créée le {new Date(key.createdAt).toLocaleDateString("fr-FR")}</span>
+                            {key.lastUsedAt && (
+                              <span className="text-[9px] text-indigo-400">
+                                Utilisée le {new Date(key.lastUsedAt).toLocaleDateString("fr-FR")} à {new Date(key.lastUsedAt).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex gap-2 items-center">
-                          <code className="flex-1 select-all bg-muted/70 border border-border px-3 py-1.5 rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto whitespace-nowrap scrollbar-none">
-                            {key.key}
+                          <code className="flex-1 select-none bg-muted/40 border border-border/50 px-3 py-1.5 rounded-lg text-xs font-mono text-muted-foreground overflow-x-auto whitespace-nowrap scrollbar-none">
+                            {key.prefix}••••••••••••••••••••••••
                           </code>
-                          <button
-                            type="button"
-                            onClick={() => copyToClipboard(key.key)}
-                            className="p-2 hover:bg-accent rounded-lg border border-border transition-colors text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none"
-                            title="Copier le token"
-                          >
-                            <Copy className="h-3.5 w-3.5" />
-                          </button>
                           <button
                             type="button"
                             onClick={() => deleteKeyMutation.mutate(key.id)}
                             disabled={deleteKeyMutation.isPending}
                             className="p-2 hover:bg-destructive/10 hover:text-destructive rounded-lg border border-border transition-colors text-muted-foreground cursor-pointer focus:outline-none"
-                            title="Révoquer"
+                            title="Révoquer la clé"
                           >
                             <Trash className="h-3.5 w-3.5" />
                           </button>
@@ -600,22 +655,22 @@ export default function SettingsPage() {
                     </p>
                     <div className="flex gap-2 items-center">
                       <code className="flex-1 bg-background border border-border px-3 py-2 rounded-lg text-[10px] font-mono text-indigo-400 overflow-x-auto whitespace-nowrap scrollbar-none select-all">
-                        {getMcpUrl(apiKeys[0].key)}
+                        {getMcpUrl("VOTRE_CLE_API")}
                       </code>
                       <button
                         type="button"
-                        onClick={() => copyToClipboard(getMcpUrl(apiKeys[0].key))}
+                        onClick={() => copyToClipboard(getMcpUrl("VOTRE_CLE_API"))}
                         className="p-2 hover:bg-accent rounded-lg border border-border bg-background transition-colors text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none"
-                        title="Copier l'URL MCP"
+                        title="Copier le modèle d'URL"
                       >
                         <Copy className="h-3.5 w-3.5" />
                       </button>
                     </div>
                     <div className="space-y-2">
-                      <p className="text-[11px] font-bold text-foreground">Configuration Cursor / Windsurf :</p>
+                      <p className="text-[11px] font-bold text-foreground">Configuration dans Cursor / Windsurf :</p>
                       <ol className="list-decimal list-inside text-xs space-y-1.5 text-muted-foreground font-medium">
                         <li>
-                          Ouvrez les Paramètres de Cursor &rarr; <strong>Models</strong> &rarr;{" "}
+                          Ouvrez les Paramètres &rarr; <strong>Models</strong> &rarr;{" "}
                           <strong>MCP</strong>.
                         </li>
                         <li>Ajoutez une nouvelle source :</li>
@@ -627,7 +682,7 @@ export default function SettingsPage() {
                             Type : <code className="text-[10px] font-mono text-foreground font-bold">SSE</code>
                           </li>
                           <li>
-                            URL : Copiez l&apos;URL ci-dessus contenant votre jeton d&apos;API.
+                            URL : Copiez l&apos;URL ci-dessus en remplaçant <code className="text-[10px] font-mono font-bold text-foreground">VOTRE_CLE_API</code> par votre clé brute.
                           </li>
                         </ul>
                       </ol>

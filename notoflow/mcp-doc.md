@@ -34,7 +34,7 @@ Cursor intègre un support natif pour les serveurs MCP de type SSE.
 4. Remplissez les champs de la boîte de dialogue :
    - **Name** : `NotoFlow`
    - **Type** : `sse`
-   - **URL** : `http://localhost:3000/api/mcp?token=VOTRE_CLE_API` *(remplacez par l'URL copiée dans vos paramètres NotoFlow, en ajustant le port si nécessaire, par exemple `3001` ou `3002`)*.
+   - **URL** : `http://localhost:3000/api/mcp?token=VOTRE_CLE_API` _(remplacez par l'URL copiée dans vos paramètres NotoFlow, en ajustant le port si nécessaire, par exemple `3001` ou `3002`)_.
 5. Cliquez sur **Save**. L'indicateur devrait passer au **vert** (Connected).
 
 ---
@@ -55,7 +55,7 @@ Windsurf supporte également le protocole SSE.
 
 ### 3. Configuration dans Claude Desktop
 
-Pour l'application de bureau officielle Claude, vous devez modifier son fichier de configuration JSON.
+L'application Claude Desktop communique via le protocole stdio (entrée/sortie standard). Pour la connecter au serveur SSE de NotoFlow, nous utilisons le pont officiel **`mcp-remote`** qui traduit les messages stdio en requêtes HTTP Streamable (SSE).
 
 1. Ouvrez le dossier de configuration de Claude Desktop sur votre système :
    - **Windows** : Saisissez `%APPDATA%\Claude` dans la barre d'adresse de l'explorateur de fichiers.
@@ -70,7 +70,7 @@ Pour l'application de bureau officielle Claude, vous devez modifier son fichier 
       "command": "npx",
       "args": [
         "-y",
-        "@modelcontextprotocol/server-sse",
+        "mcp-remote@latest",
         "http://localhost:3000/api/mcp?token=VOTRE_CLE_API"
       ]
     }
@@ -78,7 +78,7 @@ Pour l'application de bureau officielle Claude, vous devez modifier son fichier 
 }
 ```
 
-4. Enregistrez le fichier et **redémarrez complètement Claude Desktop**. Une icône de prise (plug) apparaîtra pour confirmer la connexion.
+4. Enregistrez le fichier et **redémarrez complètement Claude Desktop**. L'outil de NotoFlow apparaîtra dans Claude sous la forme d'un bouton de boîte à outils (petit marteau).
 
 ---
 
@@ -86,13 +86,13 @@ Pour l'application de bureau officielle Claude, vous devez modifier son fichier 
 
 Une fois connecté, l'assistant IA de votre éditeur aura accès aux outils suivants :
 
-| Outil | Paramètres | Description |
-| :--- | :--- | :--- |
-| `list_pages` | Aucun | Liste toutes les pages actives de votre espace de travail. |
-| `get_page` | `pageId` (string) | Lit le titre et le contenu textuel d'une page NotoFlow. |
-| `create_page` | `title` (string), `content` (string), `parentId` (string, optionnel) | Crée une nouvelle page dans votre workspace. |
-| `update_page` | `pageId` (string), `title` (string, optionnel), `content` (string, optionnel) | Modifie le titre et/ou le contenu d'une page existante. |
-| `delete_page` | `pageId` (string) | Archive (envoie à la corbeille) la page sélectionnée. |
+| Outil         | Paramètres                                                                    | Description                                                |
+| :------------ | :---------------------------------------------------------------------------- | :--------------------------------------------------------- |
+| `list_pages`  | Aucun                                                                         | Liste toutes les pages actives de votre espace de travail. |
+| `get_page`    | `pageId` (string)                                                             | Lit le titre et le contenu textuel d'une page NotoFlow.    |
+| `create_page` | `title` (string), `content` (string), `parentId` (string, optionnel)          | Crée une nouvelle page dans votre workspace.               |
+| `update_page` | `pageId` (string), `title` (string, optionnel), `content` (string, optionnel) | Modifie le titre et/ou le contenu d'une page existante.    |
+| `delete_page` | `pageId` (string)                                                             | Archive (envoie à la corbeille) la page sélectionnée.      |
 
 ---
 
@@ -102,12 +102,9 @@ Vous pouvez interagir naturellement avec vos documents NotoFlow à l'aide de com
 
 - **Lister vos documents** :
   > "Peux-tu lister toutes mes pages présentes dans mon espace NotoFlow ?"
-  
 - **Consulter une page** :
   > "Lis le contenu de ma page de projet 'Roadmap 2026' et résume-moi les trois points clés."
-  
 - **Créer une page** :
   > "Crée une nouvelle page intitulée 'Compte-rendu du 24 Mai' avec le contenu suivant : discussion sur l'intégration de Notion et le serveur MCP."
-  
 - **Mettre à jour du contenu** :
   > "Ajoute une section 'Prochaines étapes' à la fin de ma page d'idées."
