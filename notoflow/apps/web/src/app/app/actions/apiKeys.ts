@@ -68,8 +68,6 @@ export async function createApiKey(workspaceId: string, name: string) {
     },
   });
 
-  revalidatePath("/app", "layout");
-
   // Retourner la clé brute au frontend (affichage unique)
   return { rawToken, prefix };
 }
@@ -80,8 +78,6 @@ export async function deleteApiKey(workspaceId: string, id: string) {
   await db.apiKey.delete({
     where: { id },
   });
-
-  revalidatePath("/app", "layout");
 }
 
 /**
