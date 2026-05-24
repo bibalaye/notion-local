@@ -5,14 +5,35 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useWorkspaceStore } from "@/lib/store/useWorkspaceStore";
 import { api } from "@/lib/api/client";
 import { upgradeWorkspacePlan } from "@/app/app/actions/billing";
+import { getApiKeys, createApiKey, deleteApiKey } from "@/app/app/actions/apiKeys";
+import { searchNotionPages, importNotionPage } from "@/app/app/actions/notion";
 import { Button } from "@notoflow/ui/components/button";
-import { CreditCard, Shield, User, Users, Check, Sparkles, UserPlus } from "lucide-react";
+import {
+  CreditCard,
+  Shield,
+  User,
+  Users,
+  Check,
+  Sparkles,
+  UserPlus,
+  Key,
+  Info,
+  Copy,
+  Trash,
+  Link2,
+  RefreshCw,
+  Download,
+  FileText,
+  Code2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
-  const [activeTab, setActiveTab] = useState<"profile" | "workspace" | "billing">("profile");
+  const [activeTab, setActiveTab] = useState<
+    "profile" | "workspace" | "billing" | "integrations" | "developers"
+  >("profile");
 
   // Fetch active workspace details
   const { data: workspaces } = useQuery({
@@ -27,6 +48,13 @@ export default function SettingsPage() {
     queryKey: ["workspace-members", activeWorkspaceId],
     queryFn: () => api.workspaces.getMembers(activeWorkspaceId || ""),
     enabled: !!activeWorkspaceId,
+  });
+
+  // Fetch workspace API Keys
+  const { data: apiKeys, isLoading: isApiKeysLoading } = useQuery({
+    queryKey: ["api-keys", activeWorkspaceId],
+    queryFn: () => getApiKeys(activeWorkspaceId || ""),
+    enabled: !!activeWorkspaceId && activeTab === "developers",
   });
 
   // Upgrade Plan Mutation
@@ -63,13 +91,91 @@ export default function SettingsPage() {
     inviteMutation.mutate({ email: inviteEmail, role: "VIEWER" });
   };
 
+  // API Key creation
+  const [newKeyName, setNewKeyName] = useState("");
+  const createKeyMutation = useMutation({
+    mutationFn: (name: string) => createApiKey(activeWorkspaceId || "", name),
+    onSuccess: () => {
+      toast.success("Clé d'API créée avec succès !");
+      setNewKeyName("");
+      queryClient.invalidateQueries({ queryKey: ["api-keys", activeWorkspaceId] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Erreur lors de la création de la clé.");
+    },
+  });
+
+  const handleCreateApiKey = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newKeyName.trim()) return;
+    createKeyMutation.mutate(newKeyName);
+  };
+
+  // API Key deletion
+  const deleteKeyMutation = useMutation({
+    mutationFn: (keyId: string) => deleteApiKey(activeWorkspaceId || "", keyId),
+    onSuccess: () => {
+      toast.success("Clé d'API révoquée avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["api-keys", activeWorkspaceId] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Erreur lors de la suppression de la clé.");
+    },
+  });
+
+  // Notion Integration State
+  const [notionToken, setNotionToken] = useState("");
+  const [notionPages, setNotionPages] = useState<any[]>([]);
+  const [isSearchingNotion, setIsSearchingNotion] = useState(false);
+  const [importingPageId, setImportingPageId] = useState<string | null>(null);
+
+  const handleSearchNotion = async () => {
+    if (!notionToken.trim()) {
+      toast.error("Veuillez saisir votre jeton d'intégration Notion.");
+      return;
+    }
+    setIsSearchingNotion(true);
+    try {
+      const results = await searchNotionPages(notionToken.trim());
+      setNotionPages(results);
+      toast.success(`${results.length} pages Notion trouvées !`);
+    } catch (err: any) {
+      toast.error(err.message || "Impossible de récupérer les pages Notion.");
+    } finally {
+      setIsSearchingNotion(false);
+    }
+  };
+
+  const handleImportNotionPage = async (pageId: string) => {
+    setImportingPageId(pageId);
+    try {
+      await importNotionPage(activeWorkspaceId || "", pageId, notionToken.trim());
+      toast.success("Page Notion importée avec succès !");
+      queryClient.invalidateQueries({ queryKey: ["pages", "tree"] });
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors de l'importation de la page.");
+    } finally {
+      setImportingPageId(null);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Copié dans le presse-papiers !");
+  };
+
+  const getMcpUrl = (key: string) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+    return `${origin}/api/mcp?token=${key}`;
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 space-y-8">
       {/* Header */}
       <div className="space-y-1 border-b border-border/30 pb-4">
         <h1 className="text-2xl font-bold tracking-tight">Paramètres</h1>
         <p className="text-xs text-muted-foreground">
-          Gérez vos préférences de compte, les membres de votre espace et vos abonnements.
+          Gérez vos préférences de compte, les membres de votre espace et vos intégrations.
         </p>
       </div>
 
@@ -103,6 +209,24 @@ export default function SettingsPage() {
             type="button"
           >
             <CreditCard className="h-4 w-4" /> Abonnements
+          </button>
+          <button
+            onClick={() => setActiveTab("integrations")}
+            className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-all duration-150 text-left ${
+              activeTab === "integrations" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
+            }`}
+            type="button"
+          >
+            <Link2 className="h-4 w-4" /> Intégrations Notion
+          </button>
+          <button
+            onClick={() => setActiveTab("developers")}
+            className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-all duration-150 text-left ${
+              activeTab === "developers" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
+            }`}
+            type="button"
+          >
+            <Code2 className="h-4 w-4" /> Développeurs (API / MCP)
           </button>
         </div>
 
@@ -287,8 +411,235 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
+
+          {activeTab === "integrations" && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">Importation de documents Notion</h3>
+                <p className="text-[11px] text-muted-foreground">
+                  Connectez votre compte Notion pour importer vos pages et bases de données tout en conservant leur style.
+                </p>
+              </div>
+
+              {/* Instructions and Token input */}
+              <div className="space-y-4">
+                <div className="p-4 rounded-xl border border-border/40 bg-muted/20 space-y-2">
+                  <div className="flex gap-2 items-start">
+                    <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <div className="text-xs space-y-1 text-muted-foreground">
+                      <p className="font-bold text-foreground">Comment obtenir votre jeton Notion ?</p>
+                      <ol className="list-decimal list-inside space-y-1 font-medium">
+                        <li>
+                          Rendez-vous sur{" "}
+                          <a
+                            href="https://www.notion.so/my-integrations"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                          >
+                            notion.so/my-integrations
+                          </a>
+                          .
+                        </li>
+                        <li>Créez une nouvelle intégration de type interne.</li>
+                        <li>Copiez le jeton d&apos;intégration secret obtenu.</li>
+                        <li>Partagez les pages souhaitées avec l&apos;intégration dans Notion.</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 max-w-lg">
+                  <input
+                    type="password"
+                    placeholder="Saisissez votre Notion Integration Token..."
+                    value={notionToken}
+                    onChange={(e) => setNotionToken(e.target.value)}
+                    className="flex-1 rounded-lg border border-border bg-background/50 px-3 py-2 text-xs outline-none focus:border-foreground"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleSearchNotion}
+                    disabled={isSearchingNotion}
+                    className="gap-1.5 text-xs font-semibold"
+                  >
+                    {isSearchingNotion ? (
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-3.5 w-3.5" />
+                    )}
+                    Rechercher
+                  </Button>
+                </div>
+              </div>
+
+              {/* Notion Pages Result */}
+              {notionPages.length > 0 && (
+                <div className="space-y-3 pt-4 border-t border-border/20">
+                  <div className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">
+                    Pages Notion Disponibles ({notionPages.length})
+                  </div>
+                  <div className="divide-y divide-border/20 max-h-[300px] overflow-y-auto pr-1">
+                    {notionPages.map((page) => (
+                      <div key={page.id} className="flex items-center justify-between py-2.5">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-base shrink-0">
+                            {page.icon || <FileText className="h-4 w-4 text-muted-foreground" />}
+                          </span>
+                          <span className="text-xs font-semibold text-foreground truncate max-w-sm">
+                            {page.title}
+                          </span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={importingPageId !== null}
+                          onClick={() => handleImportNotionPage(page.id)}
+                          className="h-7 px-3 gap-1 text-[11px] font-semibold text-primary hover:text-primary hover:bg-primary/5 cursor-pointer"
+                        >
+                          {importingPageId === page.id ? (
+                            <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Download className="h-3.5 w-3.5" />
+                          )}
+                          {importingPageId === page.id ? "Importation..." : "Importer"}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "developers" && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">Développeurs & Connecteur MCP</h3>
+                <p className="text-[11px] text-muted-foreground">
+                  Générez des clés d&apos;API sécurisées pour connecter vos outils de développement (Cursor, Windsurf) à NotoFlow.
+                </p>
+              </div>
+
+              {/* API Keys form */}
+              <form onSubmit={handleCreateApiKey} className="flex gap-2 max-w-md">
+                <input
+                  required
+                  placeholder="Nom de la clé (ex: Cursor, Script de sauvegarde)..."
+                  value={newKeyName}
+                  onChange={(e) => setNewKeyName(e.target.value)}
+                  className="flex-1 rounded-lg border border-border bg-background/50 px-3 py-2 text-xs outline-none focus:border-foreground"
+                />
+                <Button size="sm" type="submit" disabled={createKeyMutation.isPending} className="gap-1 text-xs">
+                  <Key className="h-3.5 w-3.5" /> Générer
+                </Button>
+              </form>
+
+              {/* API Keys list */}
+              <div className="space-y-3 pt-2">
+                <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  Vos clés d&apos;API
+                </div>
+                {isApiKeysLoading ? (
+                  <div className="h-12 bg-muted/20 animate-pulse rounded-lg" />
+                ) : apiKeys && apiKeys.length > 0 ? (
+                  <div className="space-y-3">
+                    {apiKeys.map((key) => (
+                      <div
+                        key={key.id}
+                        className="p-4 rounded-xl border border-border/50 bg-card/50 flex flex-col gap-2.5 shadow-sm"
+                      >
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-xs font-bold text-foreground">{key.name}</h4>
+                          <span className="text-[10px] text-muted-foreground">
+                            Créée le {new Date(key.createdAt).toLocaleDateString("fr-FR")}
+                          </span>
+                        </div>
+                        <div className="flex gap-2 items-center">
+                          <code className="flex-1 select-all bg-muted/70 border border-border px-3 py-1.5 rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto whitespace-nowrap scrollbar-none">
+                            {key.key}
+                          </code>
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(key.key)}
+                            className="p-2 hover:bg-accent rounded-lg border border-border transition-colors text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none"
+                            title="Copier le token"
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteKeyMutation.mutate(key.id)}
+                            disabled={deleteKeyMutation.isPending}
+                            className="p-2 hover:bg-destructive/10 hover:text-destructive rounded-lg border border-border transition-colors text-muted-foreground cursor-pointer focus:outline-none"
+                            title="Révoquer"
+                          >
+                            <Trash className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs text-muted-foreground font-medium py-2">
+                    Aucune clé d&apos;API générée. Créez-en une ci-dessus pour commencer.
+                  </div>
+                )}
+              </div>
+
+              {/* MCP instructions */}
+              {apiKeys && apiKeys.length > 0 && (
+                <div className="space-y-4 pt-4 border-t border-border/20">
+                  <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    Configuration MCP (Model Context Protocol)
+                  </div>
+                  <div className="p-4 rounded-xl border border-border/40 bg-muted/20 space-y-3">
+                    <p className="text-xs text-muted-foreground font-medium">
+                      Pour connecter un client MCP (Cursor ou Windsurf) à votre espace de travail NotoFlow en mode SSE,
+                      utilisez l&apos;URL de connexion suivante :
+                    </p>
+                    <div className="flex gap-2 items-center">
+                      <code className="flex-1 bg-background border border-border px-3 py-2 rounded-lg text-[10px] font-mono text-indigo-400 overflow-x-auto whitespace-nowrap scrollbar-none select-all">
+                        {getMcpUrl(apiKeys[0].key)}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(getMcpUrl(apiKeys[0].key))}
+                        className="p-2 hover:bg-accent rounded-lg border border-border bg-background transition-colors text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none"
+                        title="Copier l'URL MCP"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-[11px] font-bold text-foreground">Configuration Cursor / Windsurf :</p>
+                      <ol className="list-decimal list-inside text-xs space-y-1.5 text-muted-foreground font-medium">
+                        <li>
+                          Ouvrez les Paramètres de Cursor &rarr; <strong>Models</strong> &rarr;{" "}
+                          <strong>MCP</strong>.
+                        </li>
+                        <li>Ajoutez une nouvelle source :</li>
+                        <ul className="list-disc list-inside pl-4 mt-0.5 space-y-0.5">
+                          <li>
+                            Nom : <code className="text-[10px] font-mono text-foreground font-bold">NotoFlow</code>
+                          </li>
+                          <li>
+                            Type : <code className="text-[10px] font-mono text-foreground font-bold">SSE</code>
+                          </li>
+                          <li>
+                            URL : Copiez l&apos;URL ci-dessus contenant votre jeton d&apos;API.
+                          </li>
+                        </ul>
+                      </ol>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
+

@@ -38,6 +38,7 @@ model User {
   realtimePresences RealtimePresence[]
   favorites         Favorite[]
   mentions          Mention[]           @relation("MentionedUser")
+  apiKeys           ApiKey[]
 
   @@index([email])
 }
@@ -91,6 +92,7 @@ model Workspace {
   invites         Invite[]
   billingCustomer String?
   billingSub      String?
+  apiKeys         ApiKey[]
 
   @@index([slug])
 }
@@ -349,4 +351,25 @@ model AuditLog {
 
   @@index([workspaceId, createdAt])
   @@index([entityType, entityId])
+}
+
+// ============================================================================
+// API KEYS
+// ============================================================================
+
+model ApiKey {
+  id          String   @id @default(cuid())
+  name        String
+  key         String   @unique
+  userId      String
+  workspaceId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([workspaceId])
+  @@index([key])
 }
