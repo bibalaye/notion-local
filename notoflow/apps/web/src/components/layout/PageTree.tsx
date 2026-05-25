@@ -1,14 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useOptimistic, useTransition } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight, Plus, Trash2, Star, Copy, FileText } from "lucide-react";
 import { Button } from "@notoflow/ui/components/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/lib/api/client";
 import { toast } from "sonner";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { TransitionLink } from "@/components/navigation/TransitionLink";
 
 interface Page {
   id: string;
@@ -16,13 +16,32 @@ interface Page {
   icon?: string | null;
   parentId: string | null;
   workspaceId: string;
+  pending?: boolean;
+  optimisticAction?: "create" | "archive" | "favorite";
 }
 
 export function PageTree({ pages }: { pages: Page[] }) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const pathname = usePathname();
-  const router = useRouter();
   const queryClient = useQueryClient();
+  const [isPending, startTransition] = useTransition();
+
+  // Optimistic state pour les pages
+  const [optimisticPages, updateOptimisticPages] = useOptimistic(
+    pages,
+    (state: Page[], action: { type: string; page?: Page; id?: string }): Page[] => {
+      switch (action.type) {
+        case "add":
+          return action.page ? [...state, { ...action.page, pending: true, optimisticAction: "create" as const }] : state;
+        case "remove":
+          return state.filter((p) => p.id !== action.id);
+        case "favorite":
+          return state; // Les favoris sont gérés séparément
+        default:
+          return state;
+      }
+    }
+  );
 
   const toggleExpand = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -30,50 +49,78 @@ export function PageTree({ pages }: { pages: Page[] }) {
     setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Mutations
-  const createMutation = useMutation({
-    mutationFn: (parentId?: string | null) => api.pages.create(parentId),
-    onSuccess: (newPage) => {
-      queryClient.invalidateQueries({ queryKey: ["pages", "tree"] });
-      toast.success("Page créée !");
-      if (newPage) {
-        router.push(`/app/page/${newPage.id}`);
+  // Création de page avec optimistic update
+  const handleCreatePage = (parentId?: string | null) => {
+    const tempId = `temp-${crypto.randomUUID()}`;
+    const newPage: Page = {
+      id: tempId,
+      title: "Sans titre",
+      icon: "📄",
+      parentId: parentId || null,
+      workspaceId: "",
+      pending: true,
+    };
+
+    startTransition(async () => {
+      // Mise à jour optimiste immédiate
+      updateOptimisticPages({ type: "add", page: newPage });
+
+      try {
+        const createdPage = await api.pages.create(parentId);
+        queryClient.invalidateQueries({ queryKey: ["pages", "tree"] });
+        toast.success("Page créée !");
+        // Note: La navigation se fera via le TransitionLink
+      } catch (error) {
+        toast.error("Erreur lors de la création.");
       }
-    },
-    onError: () => {
-      toast.error("Erreur lors de la création.");
-    },
-  });
+    });
+  };
 
-  const archiveMutation = useMutation({
-    mutationFn: (id: string) => api.pages.archive(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["pages", "tree"] });
-      toast.success("Page mise à la corbeille.");
-    },
-  });
+  // Archivage avec optimistic update
+  const handleArchive = (id: string) => {
+    startTransition(async () => {
+      // Mise à jour optimiste immédiate
+      updateOptimisticPages({ type: "remove", id });
 
-  const duplicateMutation = useMutation({
-    mutationFn: (id: string) => api.pages.duplicate(id),
-    onSuccess: (newPage) => {
-      queryClient.invalidateQueries({ queryKey: ["pages", "tree"] });
-      toast.success("Page dupliquée !");
-      if (newPage) {
-        router.push(`/app/page/${newPage.id}`);
+      try {
+        await api.pages.archive(id);
+        queryClient.invalidateQueries({ queryKey: ["pages", "tree"] });
+        toast.success("Page mise à la corbeille.");
+      } catch (error) {
+        toast.error("Erreur lors de l'archivage.");
       }
-    },
-  });
+    });
+  };
 
-  const favoriteMutation = useMutation({
-    mutationFn: (id: string) => api.pages.toggleFavorite(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["favorites"] });
-      toast.success("Favoris mis à jour.");
-    },
-  });
+  // Duplication avec optimistic update
+  const handleDuplicate = (id: string) => {
+    startTransition(async () => {
+      try {
+        const newPage = await api.pages.duplicate(id);
+        queryClient.invalidateQueries({ queryKey: ["pages", "tree"] });
+        toast.success("Page dupliquée !");
+        // Note: La navigation se fera via le TransitionLink
+      } catch (error) {
+        toast.error("Erreur lors de la duplication.");
+      }
+    });
+  };
+
+  // Toggle favori avec optimistic update
+  const handleToggleFavorite = (id: string) => {
+    startTransition(async () => {
+      try {
+        await api.pages.toggleFavorite(id);
+        queryClient.invalidateQueries({ queryKey: ["favorites"] });
+        toast.success("Favoris mis à jour.");
+      } catch (error) {
+        toast.error("Erreur.");
+      }
+    });
+  };
 
   // Group pages by parentId
-  const pagesByParent = pages.reduce<Record<string, Page[]>>((acc, page) => {
+  const pagesByParent = optimisticPages.reduce<Record<string, Page[]>>((acc, page) => {
     const parentId = page.parentId || "root";
     (acc[parentId] ??= []).push(page);
     return acc;
@@ -91,7 +138,7 @@ export function PageTree({ pages }: { pages: Page[] }) {
             isActive
               ? "bg-accent text-foreground font-semibold"
               : "text-foreground/75 hover:bg-accent/50 hover:text-foreground"
-          }`}
+          } ${page.pending ? "opacity-60" : ""}`}
           style={{ paddingLeft: `${depth * 10 + 6}px` }}
         >
           {/* Collapse/Expand Arrow */}
@@ -101,6 +148,7 @@ export function PageTree({ pages }: { pages: Page[] }) {
               !hasChildren ? "opacity-0 pointer-events-none" : ""
             }`}
             type="button"
+            disabled={isPending}
           >
             {isExpanded ? (
               <ChevronDown className="h-3 w-3 shrink-0 stroke-[2]" />
@@ -110,46 +158,54 @@ export function PageTree({ pages }: { pages: Page[] }) {
           </button>
 
           {/* Page link */}
-          <Link
+          <TransitionLink
             href={`/app/page/${page.id}`}
             className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden py-0.5 cursor-pointer"
             title={page.title || "Sans titre"}
+            showLoader
           >
             <span className="shrink-0 text-[13px]">{page.icon ?? "📄"}</span>
-            <span className="min-w-0 flex-1 truncate tracking-tight text-foreground/80">{page.title || "Sans titre"}</span>
-          </Link>
+            <span className="min-w-0 flex-1 truncate tracking-tight text-foreground/80">
+              {page.title || "Sans titre"}
+              {page.pending && " ⏳"}
+            </span>
+          </TransitionLink>
 
           {/* Inline Hover Action Buttons */}
           <div className="hidden shrink-0 items-center justify-end gap-0.5 transition-opacity duration-100 group-hover:flex group-hover/item:flex">
             <button
-              className="h-5 w-5 flex items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 text-muted-foreground/75 hover:text-foreground transition-colors cursor-pointer focus:outline-none"
-              onClick={() => favoriteMutation.mutate(page.id)}
+              className="h-5 w-5 flex items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 text-muted-foreground/75 hover:text-foreground transition-colors cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => handleToggleFavorite(page.id)}
               title="Ajouter aux favoris"
               type="button"
+              disabled={isPending || page.pending}
             >
               <Star className="h-3 w-3 stroke-[1.8]" />
             </button>
             <button
-              className="h-5 w-5 flex items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 text-muted-foreground/75 hover:text-foreground transition-colors cursor-pointer focus:outline-none"
-              onClick={() => createMutation.mutate(page.id)}
+              className="h-5 w-5 flex items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 text-muted-foreground/75 hover:text-foreground transition-colors cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => handleCreatePage(page.id)}
               title="Ajouter une sous-page"
               type="button"
+              disabled={isPending || page.pending}
             >
               <Plus className="h-3 w-3 stroke-[1.8]" />
             </button>
             <button
-              className="h-5 w-5 flex items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 text-muted-foreground/75 hover:text-foreground transition-colors cursor-pointer focus:outline-none"
-              onClick={() => duplicateMutation.mutate(page.id)}
+              className="h-5 w-5 flex items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 text-muted-foreground/75 hover:text-foreground transition-colors cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => handleDuplicate(page.id)}
               title="Dupliquer"
               type="button"
+              disabled={isPending || page.pending}
             >
               <Copy className="h-3 w-3 stroke-[1.8]" />
             </button>
             <button
-              className="h-5 w-5 flex items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 text-muted-foreground/75 hover:text-destructive transition-colors cursor-pointer focus:outline-none"
-              onClick={() => archiveMutation.mutate(page.id)}
+              className="h-5 w-5 flex items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 text-muted-foreground/75 hover:text-destructive transition-colors cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => handleArchive(page.id)}
               title="Mettre à la corbeille"
               type="button"
+              disabled={isPending || page.pending}
             >
               <Trash2 className="h-3 w-3 stroke-[1.8]" />
             </button>
@@ -176,7 +232,7 @@ export function PageTree({ pages }: { pages: Page[] }) {
 
   const rootNodes = pagesByParent["root"] || [];
 
-  if (!pages.length) {
+  if (!optimisticPages.length) {
     return (
       <div className="flex flex-col items-center justify-center p-4 text-center border border-dashed rounded-xl bg-card/30 border-border/60 mx-2">
         <FileText className="h-5 w-5 text-muted-foreground/60 mb-1" />
@@ -185,10 +241,11 @@ export function PageTree({ pages }: { pages: Page[] }) {
           size="sm"
           variant="ghost"
           className="text-xs h-auto p-0 mt-1"
-          onClick={() => createMutation.mutate(null)}
+          onClick={() => handleCreatePage(null)}
           type="button"
+          disabled={isPending}
         >
-          Créer une page
+          {isPending ? "Création..." : "Créer une page"}
         </Button>
       </div>
     );

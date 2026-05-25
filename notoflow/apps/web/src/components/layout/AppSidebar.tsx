@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import { useTransition } from "react";
 import {
   Clock,
   Database,
@@ -26,8 +26,12 @@ import { api } from "@/lib/api/client";
 import { PageTree } from "./PageTree";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { CommandPalette } from "./CommandPalette";
+import { toast } from "sonner";
+import { TransitionLink } from "@/components/navigation/TransitionLink";
 
 export function AppSidebar() {
+  const [isPending, startTransition] = useTransition();
+
   const { data: pages } = useQuery({
     queryKey: ["pages", "tree"],
     queryFn: api.pages.getTree,
@@ -37,6 +41,18 @@ export function AppSidebar() {
     queryKey: ["favorites"],
     queryFn: api.favorites.list,
   });
+
+  const handleCreatePage = () => {
+    startTransition(async () => {
+      try {
+        const newPage = await api.pages.create();
+        toast.success("Page créée !");
+        // Note: La navigation se fera via le TransitionLink
+      } catch (error) {
+        toast.error("Erreur lors de la création.");
+      }
+    });
+  };
 
   return (
     <>
@@ -62,10 +78,10 @@ export function AppSidebar() {
             <SidebarMenu className="gap-0.5">
               <SidebarMenuItem>
                 <SidebarMenuButton asChild className="rounded-md hover:bg-accent/60 px-2.5 py-1.5 transition-colors duration-100">
-                  <Link href="/app" className="flex min-w-0 items-center gap-2 text-xs font-semibold text-foreground/80">
+                  <TransitionLink href="/app" className="flex min-w-0 items-center gap-2 text-xs font-semibold text-foreground/80">
                     <Clock className="h-3.5 w-3.5 shrink-0 stroke-[1.8]" />
                     <span className="min-w-0 flex-1 truncate">Accueil</span>
-                  </Link>
+                  </TransitionLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
@@ -85,37 +101,37 @@ export function AppSidebar() {
 
               <SidebarMenuItem>
                 <SidebarMenuButton asChild className="rounded-md hover:bg-accent/60 px-2.5 py-1.5 transition-colors duration-100">
-                  <Link href="/app/favorites" className="flex min-w-0 items-center gap-2 text-xs font-semibold text-foreground/80">
+                  <TransitionLink href="/app/favorites" className="flex min-w-0 items-center gap-2 text-xs font-semibold text-foreground/80">
                     <Star className="h-3.5 w-3.5 shrink-0 stroke-[1.8]" />
                     <span className="min-w-0 flex-1 truncate">Favoris</span>
-                  </Link>
+                  </TransitionLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
               <SidebarMenuItem>
                 <SidebarMenuButton asChild className="rounded-md hover:bg-accent/60 px-2.5 py-1.5 transition-colors duration-100">
-                  <Link href="/app/databases" className="flex min-w-0 items-center gap-2 text-xs font-semibold text-foreground/80 [&>span:last-child]:min-w-0 [&>span:last-child]:flex-1 [&>span:last-child]:truncate">
+                  <TransitionLink href="/app/databases" className="flex min-w-0 items-center gap-2 text-xs font-semibold text-foreground/80 [&>span:last-child]:min-w-0 [&>span:last-child]:flex-1 [&>span:last-child]:truncate">
                     <Database className="h-3.5 w-3.5 shrink-0 stroke-[1.8]" />
                     <span>Bases de données</span>
-                  </Link>
+                  </TransitionLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
               <SidebarMenuItem>
                 <SidebarMenuButton asChild className="rounded-md hover:bg-accent/60 px-2.5 py-1.5 transition-colors duration-100">
-                  <Link href="/app/templates" className="flex min-w-0 items-center gap-2 text-xs font-semibold text-foreground/80 [&>span:last-child]:min-w-0 [&>span:last-child]:flex-1 [&>span:last-child]:truncate">
+                  <TransitionLink href="/app/templates" className="flex min-w-0 items-center gap-2 text-xs font-semibold text-foreground/80 [&>span:last-child]:min-w-0 [&>span:last-child]:flex-1 [&>span:last-child]:truncate">
                     <Folder className="h-3.5 w-3.5 shrink-0 stroke-[1.8]" />
                     <span>Modèles</span>
-                  </Link>
+                  </TransitionLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
               <SidebarMenuItem>
                 <SidebarMenuButton asChild className="rounded-md hover:bg-accent/60 px-2.5 py-1.5 transition-colors duration-100">
-                  <Link href="/app/trash" className="flex min-w-0 items-center gap-2 text-xs font-semibold text-foreground/80">
+                  <TransitionLink href="/app/trash" className="flex min-w-0 items-center gap-2 text-xs font-semibold text-foreground/80">
                     <Trash2 className="h-3.5 w-3.5 shrink-0 stroke-[1.8]" />
                     <span className="min-w-0 flex-1 truncate">Corbeille</span>
-                  </Link>
+                  </TransitionLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -129,14 +145,14 @@ export function AppSidebar() {
                   {favorites.map((p) => (
                     <SidebarMenuItem key={p.id}>
                       <SidebarMenuButton asChild className="rounded-md hover:bg-accent/60 px-2.5 py-1.2 transition-colors duration-100">
-                        <Link
+                        <TransitionLink
                           href={`/app/page/${p.id}`}
                           className="flex min-w-0 items-center gap-2 text-xs font-medium text-foreground/80"
                           title={p.title || "Sans titre"}
                         >
                           <span className="text-[13px] shrink-0">{p.icon ?? "📄"}</span>
                           <span className="min-w-0 flex-1 truncate">{p.title || "Sans titre"}</span>
-                        </Link>
+                        </TransitionLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
@@ -150,10 +166,11 @@ export function AppSidebar() {
                   Pages privées
                 </span>
                 <button
-                  className="h-5 w-5 flex items-center justify-center rounded hover:bg-accent/80 text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus:outline-none"
+                  className="h-5 w-5 flex items-center justify-center rounded hover:bg-accent/80 text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   type="button"
-                  onClick={() => void api.pages.create()}
+                  onClick={handleCreatePage}
                   title="Ajouter une page"
+                  disabled={isPending}
                 >
                   <Plus className="h-3.5 w-3.5 stroke-[1.8]" />
                 </button>
@@ -167,10 +184,10 @@ export function AppSidebar() {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild className="rounded-md hover:bg-accent/60 px-2.5 py-1.5 transition-colors duration-100">
-                <Link href="/app/settings" className="flex items-center gap-2 text-xs font-semibold text-foreground/80">
+                <TransitionLink href="/app/settings" className="flex items-center gap-2 text-xs font-semibold text-foreground/80">
                   <Settings className="h-3.5 w-3.5 shrink-0 stroke-[1.8]" />
                   <span>Paramètres</span>
-                </Link>
+                </TransitionLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

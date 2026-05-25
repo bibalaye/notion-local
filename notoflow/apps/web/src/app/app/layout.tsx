@@ -8,6 +8,7 @@ import { QueryProvider } from "@/lib/react-query/provider";
 import { ThemeProvider } from "@/lib/theme/theme-provider";
 import { SidebarProvider } from "@notoflow/ui/components/sidebar";
 import { Toaster } from "sonner";
+import { SubtlePageTransition } from "@/components/navigation/PageTransition";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -18,7 +19,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <AppSidebar />
             <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
               <Topbar />
-              <div className="flex-1 overflow-y-auto">{children}</div>
+              <SubtlePageTransition className="flex-1 overflow-y-auto">
+                {children}
+              </SubtlePageTransition>
             </main>
           </div>
           <CommandPalette />
