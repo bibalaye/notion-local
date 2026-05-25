@@ -3,7 +3,6 @@ import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import Table from "@tiptap/extension-table";
-import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import TaskItem from "@tiptap/extension-task-item";
@@ -16,6 +15,7 @@ import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import CalloutBlockNode from "./CalloutBlockNode";
 import DatabaseBlockNode from "./DatabaseBlockNode";
+import { CustomTableCell } from "./CustomTableCell";
 
 export const getExtensions = (options?: { renderDatabase?: (id: string) => React.ReactNode }) => {
   const extensions = [
@@ -36,10 +36,17 @@ export const getExtensions = (options?: { renderDatabase?: (id: string) => React
     Youtube.configure({ HTMLAttributes: { class: "rounded-lg" } }),
     TaskList,
     TaskItem.configure({ nested: true }),
-    Table.configure({ resizable: true }),
+    // Configuration Table avec resizable
+    Table.configure({ 
+      resizable: true,
+      HTMLAttributes: {
+        class: "tiptap-table",
+      },
+    }),
     TableRow,
     TableHeader,
-    TableCell,
+    // Utiliser CustomTableCell au lieu de TableCell par défaut
+    CustomTableCell,
     CalloutBlockNode,
     DatabaseBlockNode ? DatabaseBlockNode.configure({
       renderDatabase: options?.renderDatabase,

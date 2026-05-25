@@ -443,3 +443,37 @@
 .animate-fade-in {
   animation: fade-in 0.12s ease forwards;
 }
+
+/* ── Table controls (Notion-style hover controls) ──────────────── */
+.ProseMirror table {
+  position: relative;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.ProseMirror table td,
+.ProseMirror table th {
+  border: 1px solid hsl(var(--border));
+  padding: 0.5rem 0.75rem;
+  vertical-align: top;
+  position: relative;
+}
+
+.ProseMirror table th {
+  background-color: hsl(var(--muted) / 0.5);
+  font-weight: 600;
+  text-align: left;
+}
+
+/* Amélioration de la sélection des cellules */
+.ProseMirror .selectedCell {
+  background-color: hsl(var(--accent));
+}
+
+/* Wrapper pour les contrôles de tableau */
+.table-wrapper {
+  position: relative;
+  overflow: visible;
+  margin: 2rem 0;
+  padding: 2.5rem 0 0 2.5rem;
+}
