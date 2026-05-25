@@ -120,7 +120,7 @@ export function PageTree({ pages }: { pages: Page[] }) {
           </Link>
 
           {/* Inline Hover Action Buttons */}
-          <div className="flex w-[86px] shrink-0 items-center justify-end gap-0.5 opacity-0 transition-opacity duration-100 group-hover:pointer-events-auto group-hover:opacity-100 group-hover/item:pointer-events-auto group-hover/item:opacity-100">
+          <div className="hidden shrink-0 items-center justify-end gap-0.5 transition-opacity duration-100 group-hover:flex group-hover/item:flex">
             <button
               className="h-5 w-5 flex items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 text-muted-foreground/75 hover:text-foreground transition-colors cursor-pointer focus:outline-none"
               onClick={() => favoriteMutation.mutate(page.id)}
@@ -194,5 +194,5 @@ export function PageTree({ pages }: { pages: Page[] }) {
     );
   }
 
-  return <div className="w-full max-w-full min-w-0 space-y-0.5 overflow-hidden px-1">{rootNodes.map((node) => renderNode(node, 0))}</div>;
+  return <div className="w-full min-w-0 space-y-0.5 px-1">{rootNodes.map((node) => renderNode(node, 0))}</div>;
 }

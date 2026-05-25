@@ -40,7 +40,7 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        "flex h-full w-64 shrink-0 flex-col border-r border-border bg-card text-card-foreground",
+        "flex h-screen w-64 shrink-0 flex-col border-r border-border bg-card text-card-foreground",
         className,
       )}
       {...props}
@@ -52,7 +52,7 @@ export const SidebarHeader = ({ className, ...props }: React.HTMLAttributes<HTML
   <div className={cn("flex flex-col gap-2 p-3", className)} {...props} />
 );
 export const SidebarContent = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex min-h-0 flex-1 flex-col gap-1 overflow-hidden", className)} {...props} />
+  <div className={cn("flex min-h-0 min-w-0 flex-1 flex-col gap-1 overflow-y-auto", className)} {...props} />
 );
 export const SidebarFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div className={cn("border-t p-2", className)} {...props} />
