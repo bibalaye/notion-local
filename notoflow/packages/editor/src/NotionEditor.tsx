@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { EditorContent, useEditor, BubbleMenu } from "@tiptap/react";
 import { getExtensions } from "./extensions/index";
+import { TableBubbleMenu } from "./components/TableBubbleMenu";
 import {
   Sparkles,
   Bold,
@@ -262,6 +263,7 @@ export function NotionEditor({
 
   const editor = useEditor({
     immediatelyRender: false,
+    shouldRerenderOnTransaction: false, // Réduit les re-renders React inutiles
     extensions: getExtensions({ renderDatabase }),
     content: normalizeEditorContent(initialContent) ?? { type: "doc", content: [{ type: "paragraph" }] },
     editable: !readOnly,
@@ -385,6 +387,13 @@ export function NotionEditor({
       editor.commands.setContent(normalizedInitialContent);
     }
   }, [editor, initialContent]);
+
+  // Cleanup proper de l'éditeur pour éviter les erreurs removeChild
+  useEffect(() => {
+    return () => {
+      editor?.destroy();
+    };
+  }, [editor]);
 
   useEffect(() => {
     return () => {
@@ -767,6 +776,10 @@ export function NotionEditor({
           )}
         </BubbleMenu>
       )}
+
+      {/* Table Bubble Menu - Advanced table controls */}
+      {editor && <TableBubbleMenu editor={editor} />}
+
       {hoveredBlock && !readOnly && (
         <div
           className="notion-block-controls"

@@ -6,7 +6,7 @@ import { PrismaPlugin } from "@prisma/nextjs-monorepo-workaround-plugin";
 const monorepoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 const nextConfig: NextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false, // Désactivé pour éviter les conflits DOM avec TipTap/ProseMirror
   // Standalone = Docker/self-host. Sur Vercel, laisser le mode par défaut.
   ...(process.env.VERCEL
     ? {}
