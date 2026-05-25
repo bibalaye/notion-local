@@ -14,6 +14,8 @@ import {
   Palette,
   Copy,
   Trash,
+  Plus,
+  GripVertical,
 } from "lucide-react";
 import "./styles.css";
 
@@ -42,6 +44,13 @@ const highlights = [
   { label: "Rose", value: "#faf0f5", color: "bg-[#faf0f5] dark:bg-[#582c4d]" },
   { label: "Rouge", value: "#fdebeb", color: "bg-[#fdebeb] dark:bg-[#582c2c]" },
 ];
+
+type HoveredBlock = {
+  pos: number;
+  nodeSize: number;
+  top: number;
+  height: number;
+};
 
 function normalizeEditorContent(initialContent: unknown) {
   if (typeof initialContent === "string") {
@@ -101,8 +110,27 @@ export function NotionEditor({
 
   // Floating selection bubble menu states
   const [bubbleSubmenu, setBubbleSubmenu] = useState<"none" | "block" | "color">("none");
+  const [hoveredBlock, setHoveredBlock] = useState<HoveredBlock | null>(null);
+  const [isDraggingBlock, setIsDraggingBlock] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const draggedBlockRef = useRef<{ pos: number; nodeSize: number; json: any } | null>(null);
+  const hideControlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const cancelHideBlockControls = useCallback(() => {
+    if (hideControlsTimeoutRef.current) {
+      clearTimeout(hideControlsTimeoutRef.current);
+      hideControlsTimeoutRef.current = null;
+    }
+  }, []);
+
+  const scheduleHideBlockControls = useCallback(() => {
+    if (hideControlsTimeoutRef.current) clearTimeout(hideControlsTimeoutRef.current);
+    hideControlsTimeoutRef.current = setTimeout(() => {
+      setHoveredBlock(null);
+      hideControlsTimeoutRef.current = null;
+    }, 220);
+  }, []);
 
   const commandItems = [
     {
@@ -146,6 +174,21 @@ export function NotionEditor({
       description: "Écrire du code informatique",
       emoji: "💻",
       action: (editor: any) => editor.chain().focus().toggleCodeBlock().run(),
+    },
+    {
+      title: "Encadre",
+      description: "Bloc visuel avec icone et couleur",
+      emoji: "[]",
+      action: (editor: any) =>
+        editor
+          .chain()
+          .focus()
+          .insertContent({
+            type: "calloutBlock",
+            attrs: { emoji: "!", tone: "blue" },
+            content: [{ type: "paragraph" }],
+          })
+          .run(),
     },
     {
       title: "Séparateur",
@@ -343,6 +386,104 @@ export function NotionEditor({
     }
   }, [editor, initialContent]);
 
+  useEffect(() => {
+    return () => {
+      if (hideControlsTimeoutRef.current) clearTimeout(hideControlsTimeoutRef.current);
+    };
+  }, []);
+
+  const resolveEditableBlock = useCallback(
+    (clientX: number, clientY: number): HoveredBlock | null => {
+      if (!editor || readOnly || !containerRef.current) return null;
+
+      const result = editor.view.posAtCoords({ left: clientX, top: clientY });
+      if (!result) return null;
+
+      const resolvedPos = editor.state.doc.resolve(result.pos);
+      let depth = resolvedPos.depth;
+
+      while (depth > 1) {
+        const nodeName = resolvedPos.node(depth).type.name;
+        if (nodeName === "listItem" || nodeName === "taskItem" || nodeName === "calloutBlock") break;
+        depth -= 1;
+      }
+
+      const blockPos = depth > 0 ? resolvedPos.before(depth) : 0;
+      const blockNode = editor.state.doc.nodeAt(blockPos);
+      if (!blockNode || blockNode.type.name === "doc") return null;
+
+      const coords = editor.view.coordsAtPos(Math.min(blockPos + 1, editor.state.doc.content.size));
+      const containerBox = containerRef.current.getBoundingClientRect();
+      const domNode = editor.view.nodeDOM(blockPos) as HTMLElement | null;
+      const domBox = domNode?.getBoundingClientRect();
+
+      return {
+        pos: blockPos,
+        nodeSize: blockNode.nodeSize,
+        top: (domBox?.top ?? coords.top) - containerBox.top,
+        height: Math.max(domBox?.height ?? coords.bottom - coords.top, 28),
+      };
+    },
+    [editor, readOnly],
+  );
+
+  const handleEditorMouseMove = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      cancelHideBlockControls();
+
+      if (editor && hoveredBlock) {
+        const editorBox = editor.view.dom.getBoundingClientRect();
+        const isInControlLane =
+          event.clientX >= editorBox.left - 88 &&
+          event.clientX <= editorBox.left &&
+          event.clientY >= editorBox.top + hoveredBlock.top - 8 &&
+          event.clientY <= editorBox.top + hoveredBlock.top + hoveredBlock.height + 8;
+
+        if (isInControlLane) return;
+      }
+
+      const block = resolveEditableBlock(event.clientX, event.clientY);
+      setHoveredBlock(block);
+    },
+    [cancelHideBlockControls, editor, hoveredBlock, resolveEditableBlock],
+  );
+
+  const insertBlockAfter = useCallback(() => {
+    if (!editor || !hoveredBlock) return;
+    const insertPos = hoveredBlock.pos + hoveredBlock.nodeSize;
+    editor
+      .chain()
+      .focus()
+      .insertContentAt(insertPos, { type: "paragraph" })
+      .setTextSelection(insertPos + 1)
+      .run();
+  }, [editor, hoveredBlock]);
+
+  const moveDraggedBlock = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      if (!editor || !draggedBlockRef.current) return;
+      event.preventDefault();
+
+      const targetBlock = resolveEditableBlock(event.clientX, event.clientY);
+      const sourceBlock = draggedBlockRef.current;
+      if (!targetBlock || targetBlock.pos === sourceBlock.pos) return;
+
+      let insertPos = targetBlock.pos;
+      const shouldInsertAfter = event.clientY > event.currentTarget.getBoundingClientRect().top + targetBlock.top + targetBlock.height / 2;
+      if (shouldInsertAfter) insertPos = targetBlock.pos + targetBlock.nodeSize;
+
+      let tr = editor.state.tr.delete(sourceBlock.pos, sourceBlock.pos + sourceBlock.nodeSize);
+      if (sourceBlock.pos < insertPos) insertPos -= sourceBlock.nodeSize;
+      tr = tr.insert(insertPos, editor.schema.nodeFromJSON(sourceBlock.json));
+      editor.view.dispatch(tr);
+      editor.commands.focus(insertPos + 1);
+      draggedBlockRef.current = null;
+      setIsDraggingBlock(false);
+      setHoveredBlock(null);
+    },
+    [editor, resolveEditableBlock],
+  );
+
   const blockTypes = [
     { label: "Texte", active: () => editor?.isActive("paragraph") ?? false, action: () => editor?.chain().focus().setParagraph().run(), icon: "✍️" },
     { label: "Titre 1", active: () => editor?.isActive("heading", { level: 1 }) ?? false, action: () => editor?.chain().focus().toggleHeading({ level: 1 }).run(), icon: "❶" },
@@ -353,6 +494,21 @@ export function NotionEditor({
     { label: "Liste de tâches", active: () => editor?.isActive("taskList") ?? false, action: () => editor?.chain().focus().toggleTaskList().run(), icon: "☑️" },
     { label: "Citation", active: () => editor?.isActive("blockquote") ?? false, action: () => editor?.chain().focus().toggleBlockquote().run(), icon: "💬" },
     { label: "Code", active: () => editor?.isActive("codeBlock") ?? false, action: () => editor?.chain().focus().toggleCodeBlock().run(), icon: "💻" },
+    {
+      label: "Encadre",
+      active: () => editor?.isActive("calloutBlock") ?? false,
+      action: () =>
+        editor
+          ?.chain()
+          .focus()
+          .insertContent({
+            type: "calloutBlock",
+            attrs: { emoji: "!", tone: "blue" },
+            content: [{ type: "paragraph" }],
+          })
+          .run(),
+      icon: "[]",
+    },
   ];
 
   const getActiveBlockLabel = () => {
@@ -385,7 +541,15 @@ export function NotionEditor({
   if (!editor) return <div className="h-48 animate-pulse rounded-xl bg-muted/30 border border-border/50" />;
 
   return (
-    <div ref={containerRef} className="relative w-full">
+    <div
+      ref={containerRef}
+      className={`relative w-full ${isDraggingBlock ? "notion-editor-dragging" : ""}`}
+      onMouseMove={handleEditorMouseMove}
+      onMouseEnter={cancelHideBlockControls}
+      onMouseLeave={scheduleHideBlockControls}
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={moveDraggedBlock}
+    >
       {editor && (
         <BubbleMenu
           editor={editor}
@@ -603,6 +767,54 @@ export function NotionEditor({
           )}
         </BubbleMenu>
       )}
+      {hoveredBlock && !readOnly && (
+        <div
+          className="notion-block-controls"
+          style={{ top: `${hoveredBlock.top}px` }}
+          contentEditable={false}
+          onMouseEnter={() => {
+            cancelHideBlockControls();
+            setHoveredBlock(hoveredBlock);
+          }}
+          onMouseLeave={scheduleHideBlockControls}
+          onMouseMove={(event) => event.stopPropagation()}
+          onPointerMove={(event) => event.stopPropagation()}
+        >
+          <button
+            type="button"
+            className="notion-block-control-button"
+            onClick={insertBlockAfter}
+            title="Ajouter un bloc"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            className="notion-block-control-button notion-block-drag-button"
+            draggable
+            onDragStart={(event) => {
+              const node = editor.state.doc.nodeAt(hoveredBlock.pos);
+              if (!node) return;
+              draggedBlockRef.current = {
+                pos: hoveredBlock.pos,
+                nodeSize: hoveredBlock.nodeSize,
+                json: node.toJSON(),
+              };
+              setIsDraggingBlock(true);
+              event.dataTransfer.effectAllowed = "move";
+              event.dataTransfer.setData("application/x-notoflow-block", String(hoveredBlock.pos));
+            }}
+            onDragEnd={() => {
+              draggedBlockRef.current = null;
+              setIsDraggingBlock(false);
+            }}
+            title="Deplacer le bloc"
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       <EditorContent editor={editor} />
 
       {/* Floating Collaborative Cursors */}

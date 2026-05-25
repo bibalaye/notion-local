@@ -35,6 +35,8 @@ import {
   Compass,
   ChevronLeft,
   Database,
+  SlidersHorizontal,
+  Type,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -51,6 +53,40 @@ const COVER_PRESETS = [
   { name: "Cosmic Nebula", url: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=1200&auto=format&fit=crop" },
   { name: "Minimal Concrete", url: "https://images.unsplash.com/photo-1533038590840-1cde6b66b706?q=80&w=1200&auto=format&fit=crop" },
 ];
+
+const PAGE_BACKGROUNDS = [
+  { label: "Defaut", value: "default", className: "bg-background" },
+  { label: "Ivoire", value: "ivory", className: "bg-[#fbfaf7] dark:bg-[#1f1e1b]" },
+  { label: "Bleu", value: "blue", className: "bg-[#f4f8fb] dark:bg-[#18212b]" },
+  { label: "Vert", value: "green", className: "bg-[#f5f9f3] dark:bg-[#19251d]" },
+  { label: "Rose", value: "rose", className: "bg-[#fbf6f8] dark:bg-[#2a1d25]" },
+];
+
+const PAGE_WIDTHS = {
+  regular: "max-w-3xl",
+  wide: "max-w-5xl",
+  full: "max-w-none",
+} as const;
+
+const PAGE_FONTS = {
+  sans: "font-sans",
+  serif: "font-serif",
+  mono: "font-mono",
+} as const;
+
+type PageCustomization = {
+  width: keyof typeof PAGE_WIDTHS;
+  font: keyof typeof PAGE_FONTS;
+  smallText: boolean;
+  background: (typeof PAGE_BACKGROUNDS)[number]["value"];
+};
+
+const DEFAULT_PAGE_CUSTOMIZATION: PageCustomization = {
+  width: "regular",
+  font: "sans",
+  smallText: false,
+  background: "default",
+};
 
 interface PageEditorClientProps {
   page: {
@@ -97,6 +133,9 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [showCoverPicker, setShowCoverPicker] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [showCustomizePanel, setShowCustomizePanel] = useState(false);
+  const [pageCustomization, setPageCustomization] =
+    useState<PageCustomization>(DEFAULT_PAGE_CUSTOMIZATION);
 
   // AI Assistant Sidebar state
   const [isAiOpen, setIsAiOpen] = useState(false);
@@ -147,6 +186,31 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
   const isSavingRef = useRef(false);
   const lastSavedTitleRef = useRef(page.title);
   const lastSavedContentRef = useRef(JSON.stringify(page.content ?? null));
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(`notoflow-page-customization:${page.id}`);
+      if (saved) {
+        setPageCustomization({
+          ...DEFAULT_PAGE_CUSTOMIZATION,
+          ...JSON.parse(saved),
+        });
+      }
+    } catch {
+      // Ignore local customization restore errors.
+    }
+  }, [page.id]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        `notoflow-page-customization:${page.id}`,
+        JSON.stringify(pageCustomization),
+      );
+    } catch {
+      // Ignore local customization persistence errors.
+    }
+  }, [page.id, pageCustomization]);
 
   const queueSave = useCallback((updatedFields: Parameters<typeof updatePage>[1]) => {
     pendingSaveRef.current = {
@@ -500,10 +564,17 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
     }
   };
 
+  const selectedBackground =
+    PAGE_BACKGROUNDS.find((preset) => preset.value === pageCustomization.background) ??
+    PAGE_BACKGROUNDS[0];
+  const pageWidthClass = PAGE_WIDTHS[pageCustomization.width];
+  const pageFontClass = PAGE_FONTS[pageCustomization.font];
+  const editorTextClass = pageCustomization.smallText ? "text-[0.94rem]" : "text-base";
+
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className={`flex h-screen overflow-hidden ${selectedBackground.className}`}>
       {/* Main Document Panel */}
-      <div className="flex-1 flex flex-col overflow-y-auto min-w-0">
+      <div className="flex-1 flex flex-col overflow-y-auto min-w-0 bg-transparent">
         {/* Editor Top Bar */}
         <div className="flex items-center justify-between border-b border-border/40 px-6 py-2.5 shrink-0 bg-background/95 backdrop-blur-md sticky top-0 z-20">
           {/* Left Breadcrumb */}
@@ -610,6 +681,135 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
                 <Share2 className="h-4 w-4" />
               </Button>
             )}
+
+            <div className="relative">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                onClick={() => setShowCustomizePanel(!showCustomizePanel)}
+                title="Personnaliser la page"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+              </Button>
+
+              {showCustomizePanel && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowCustomizePanel(false)} />
+                  <div className="absolute right-0 mt-1.5 z-50 w-72 rounded-xl border border-border bg-popover/95 p-3 shadow-2xl backdrop-blur-md">
+                    <div className="mb-3 flex items-center gap-2 text-xs font-bold text-foreground">
+                      <Type className="h-4 w-4 text-muted-foreground" />
+                      Personnaliser
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          Largeur
+                        </div>
+                        <div className="grid grid-cols-3 gap-1 rounded-lg bg-muted/50 p-1">
+                          {[
+                            { label: "Standard", value: "regular" },
+                            { label: "Large", value: "wide" },
+                            { label: "Pleine", value: "full" },
+                          ].map((item) => (
+                            <button
+                              key={item.value}
+                              type="button"
+                              onClick={() =>
+                                setPageCustomization((prev) => ({
+                                  ...prev,
+                                  width: item.value as PageCustomization["width"],
+                                }))
+                              }
+                              className={`rounded-md px-2 py-1.5 text-[11px] font-semibold transition ${
+                                pageCustomization.width === item.value
+                                  ? "bg-background text-foreground shadow-sm"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          Police
+                        </div>
+                        <div className="grid grid-cols-3 gap-1 rounded-lg bg-muted/50 p-1">
+                          {[
+                            { label: "Sans", value: "sans" },
+                            { label: "Serif", value: "serif" },
+                            { label: "Mono", value: "mono" },
+                          ].map((item) => (
+                            <button
+                              key={item.value}
+                              type="button"
+                              onClick={() =>
+                                setPageCustomization((prev) => ({
+                                  ...prev,
+                                  font: item.value as PageCustomization["font"],
+                                }))
+                              }
+                              className={`rounded-md px-2 py-1.5 text-[11px] font-semibold transition ${
+                                pageCustomization.font === item.value
+                                  ? "bg-background text-foreground shadow-sm"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <label className="flex items-center justify-between rounded-lg border border-border/70 px-3 py-2 text-xs font-semibold">
+                        Texte compact
+                        <input
+                          type="checkbox"
+                          checked={pageCustomization.smallText}
+                          onChange={(event) =>
+                            setPageCustomization((prev) => ({
+                              ...prev,
+                              smallText: event.target.checked,
+                            }))
+                          }
+                          className="h-4 w-4 rounded border-border accent-violet-600"
+                        />
+                      </label>
+
+                      <div className="space-y-1.5">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          Couleur de page
+                        </div>
+                        <div className="grid grid-cols-5 gap-2">
+                          {PAGE_BACKGROUNDS.map((preset) => (
+                            <button
+                              key={preset.value}
+                              type="button"
+                              onClick={() =>
+                                setPageCustomization((prev) => ({
+                                  ...prev,
+                                  background: preset.value,
+                                }))
+                              }
+                              className={`h-8 rounded-lg border transition ${preset.className} ${
+                                pageCustomization.background === preset.value
+                                  ? "border-violet-500 ring-2 ring-violet-500/20"
+                                  : "border-border/70 hover:border-foreground/40"
+                              }`}
+                              title={preset.label}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Actions MenuDropdown */}
             <div className="relative">
@@ -741,7 +941,9 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
         )}
 
         {/* Editor Writing Board */}
-        <div className="max-w-3xl w-full mx-auto px-12 py-8 flex-1">
+        <div
+          className={`${pageWidthClass} ${pageFontClass} ${editorTextClass} w-full mx-auto px-6 md:px-12 py-8 flex-1 transition-[max-width] duration-200`}
+        >
           {/* Cover image button / area if no cover exists */}
           {!coverUrl && (
             <div className="group/cover h-8 flex items-center justify-start gap-3 opacity-0 hover:opacity-100 transition-opacity duration-200">
@@ -846,7 +1048,7 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
               onChange={handleTitleChange}
               onBlur={() => void flushSave()}
               readOnly={isReadOnly}
-              className="text-4xl font-bold font-sans tracking-tight bg-transparent border-none p-0 focus:outline-none focus:ring-0 w-full placeholder:text-muted-foreground/20 text-foreground mb-6"
+              className={`text-4xl font-bold ${pageFontClass} tracking-tight bg-transparent border-none p-0 focus:outline-none focus:ring-0 w-full placeholder:text-muted-foreground/20 text-foreground mb-6`}
               placeholder="Sans titre"
             />
           </div>

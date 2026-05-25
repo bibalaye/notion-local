@@ -85,9 +85,9 @@ export function PageTree({ pages }: { pages: Page[] }) {
     const isActive = pathname === `/app/page/${page.id}`;
 
     return (
-      <div key={page.id} className="group/item select-none">
+      <div key={page.id} className="group group/item min-w-0 select-none">
         <div
-          className={`flex items-center gap-1 py-1 px-2.5 rounded-md text-xs transition-colors duration-100 relative ${
+          className={`flex w-full min-w-0 max-w-full items-center gap-1 overflow-hidden rounded-md px-2.5 py-1 text-xs transition-colors duration-100 ${
             isActive
               ? "bg-accent text-foreground font-semibold"
               : "text-foreground/75 hover:bg-accent/50 hover:text-foreground"
@@ -97,7 +97,7 @@ export function PageTree({ pages }: { pages: Page[] }) {
           {/* Collapse/Expand Arrow */}
           <button
             onClick={(e) => toggleExpand(page.id, e)}
-            className={`h-4.5 w-4.5 flex items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 transition-colors text-muted-foreground/80 hover:text-foreground cursor-pointer focus:outline-none ${
+            className={`h-4.5 w-4.5 flex shrink-0 items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 transition-colors text-muted-foreground/80 hover:text-foreground cursor-pointer focus:outline-none ${
               !hasChildren ? "opacity-0 pointer-events-none" : ""
             }`}
             type="button"
@@ -110,13 +110,17 @@ export function PageTree({ pages }: { pages: Page[] }) {
           </button>
 
           {/* Page link */}
-          <Link href={`/app/page/${page.id}`} className="flex-1 flex items-center gap-1.5 min-w-0 py-0.5 cursor-pointer">
+          <Link
+            href={`/app/page/${page.id}`}
+            className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden py-0.5 cursor-pointer"
+            title={page.title || "Sans titre"}
+          >
             <span className="shrink-0 text-[13px]">{page.icon ?? "📄"}</span>
-            <span className="truncate tracking-tight text-foreground/80">{page.title || "Sans titre"}</span>
+            <span className="min-w-0 flex-1 truncate tracking-tight text-foreground/80">{page.title || "Sans titre"}</span>
           </Link>
 
           {/* Inline Hover Action Buttons */}
-          <div className="absolute right-1 px-1.5 opacity-0 group-hover/item:opacity-100 flex items-center gap-0.5 bg-gradient-to-l from-accent via-accent to-transparent pl-4 rounded-r-md">
+          <div className="flex w-[86px] shrink-0 items-center justify-end gap-0.5 opacity-0 transition-opacity duration-100 group-hover:pointer-events-auto group-hover:opacity-100 group-hover/item:pointer-events-auto group-hover/item:opacity-100">
             <button
               className="h-5 w-5 flex items-center justify-center rounded hover:bg-neutral-500/10 dark:hover:bg-neutral-100/10 text-muted-foreground/75 hover:text-foreground transition-colors cursor-pointer focus:outline-none"
               onClick={() => favoriteMutation.mutate(page.id)}
@@ -190,5 +194,5 @@ export function PageTree({ pages }: { pages: Page[] }) {
     );
   }
 
-  return <div className="space-y-0.5 px-1">{rootNodes.map((node) => renderNode(node, 0))}</div>;
+  return <div className="w-full max-w-full min-w-0 space-y-0.5 overflow-hidden px-1">{rootNodes.map((node) => renderNode(node, 0))}</div>;
 }

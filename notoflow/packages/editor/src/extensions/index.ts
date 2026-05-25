@@ -14,6 +14,7 @@ import Youtube from "@tiptap/extension-youtube";
 import StarterKit from "@tiptap/starter-kit";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
+import CalloutBlockNode from "./CalloutBlockNode";
 import DatabaseBlockNode from "./DatabaseBlockNode";
 
 export const getExtensions = (options?: { renderDatabase?: (id: string) => React.ReactNode }) => {
@@ -39,6 +40,7 @@ export const getExtensions = (options?: { renderDatabase?: (id: string) => React
     TableRow,
     TableHeader,
     TableCell,
+    CalloutBlockNode,
     DatabaseBlockNode ? DatabaseBlockNode.configure({
       renderDatabase: options?.renderDatabase,
     }) : undefined,

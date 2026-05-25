@@ -69,13 +69,13 @@ export function WorkspaceSwitcher() {
   };
 
   return (
-    <div className="relative">
+    <div className="relative min-w-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-sm font-semibold text-foreground/90 hover:bg-accent/60 transition-colors duration-150 cursor-pointer focus:outline-none"
+        className="flex w-full min-w-0 items-center justify-between gap-1.5 overflow-hidden rounded-lg px-2.5 py-1.5 text-left text-sm font-semibold text-foreground/90 transition-colors duration-150 hover:bg-accent/60 focus:outline-none"
         type="button"
       >
-        <span className="truncate flex items-center gap-2">
+        <span className="flex min-w-0 flex-1 items-center gap-2 truncate">
           <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 text-[10px] font-extrabold shadow-sm border border-neutral-300/20">
             {activeWorkspace?.name?.charAt(0) || "N"}
           </span>
@@ -109,14 +109,14 @@ export function WorkspaceSwitcher() {
                   <button
                     key={ws.id}
                     onClick={() => handleSelectWorkspace(ws.id)}
-                    className="w-full flex items-center justify-between rounded-md px-2 py-1.5 text-xs hover:bg-accent text-left transition-colors duration-100 cursor-pointer"
+                    className="flex w-full min-w-0 items-center justify-between rounded-md px-2 py-1.5 text-left text-xs transition-colors duration-100 hover:bg-accent"
                     type="button"
                   >
-                    <span className="truncate flex items-center gap-2 font-medium text-foreground/80">
+                    <span className="flex min-w-0 flex-1 items-center gap-2 truncate font-medium text-foreground/80">
                       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-neutral-100 dark:bg-neutral-800 text-foreground text-[10px] font-bold border border-neutral-300/10">
                         {ws.name.charAt(0)}
                       </span>
-                      <span className="truncate">{ws.name}</span>
+                      <span className="min-w-0 flex-1 truncate">{ws.name}</span>
                     </span>
                     {activeWorkspace?.id === ws.id && (
                       <Check className="h-3.5 w-3.5 text-foreground shrink-0 stroke-[2]" />

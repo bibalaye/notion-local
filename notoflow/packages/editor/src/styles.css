@@ -9,6 +9,49 @@
   -webkit-font-smoothing: antialiased;
 }
 
+.notion-block-controls {
+  position: absolute;
+  left: -3.25rem;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  height: 1.75rem;
+  opacity: 1;
+  transform: translateY(0.15rem);
+}
+
+.notion-block-control-button {
+  display: inline-flex;
+  width: 1.55rem;
+  height: 1.55rem;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--muted-foreground));
+  border-radius: 0.25rem;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+
+.notion-block-control-button:hover {
+  color: hsl(var(--foreground));
+  background: hsl(var(--accent));
+}
+
+.notion-block-drag-button {
+  cursor: grab;
+}
+
+.notion-block-drag-button:active,
+.notion-editor-dragging .notion-block-drag-button {
+  cursor: grabbing;
+}
+
+.notion-editor-dragging .notion-editor > * {
+  transition: transform 120ms ease;
+}
+
 /* ── Placeholder ─────────────────────────────────────────────────── */
 .notion-editor p.is-empty:first-child::before,
 .notion-editor p.is-editor-empty:first-child::before {
@@ -117,6 +160,109 @@
   font-style: normal;
   font-size: 1rem;
   font-weight: 500;
+}
+
+.notion-callout {
+  display: flex;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+  padding: 0.9rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border) / 0.6);
+}
+
+.notion-callout-icon {
+  flex: 0 0 auto;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  background: hsl(var(--background) / 0.5);
+}
+
+.notion-callout-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.notion-callout-content > :first-child {
+  margin-top: 0;
+}
+
+.notion-callout-content > :last-child {
+  margin-bottom: 0;
+}
+
+.notion-callout-colors {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.notion-callout:hover .notion-callout-colors {
+  opacity: 1;
+}
+
+.notion-callout-color {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--border) / 0.55);
+}
+
+.notion-callout-color.is-active {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 1px;
+}
+
+.notion-callout-gray {
+  background: hsl(var(--muted) / 0.65);
+}
+
+.notion-callout-blue {
+  background: #e7f3f8;
+}
+
+.notion-callout-green {
+  background: #edf7ec;
+}
+
+.notion-callout-yellow {
+  background: #fbf3db;
+}
+
+.notion-callout-red {
+  background: #fdebeb;
+}
+
+.notion-callout-purple {
+  background: #f6f0fa;
+}
+
+.dark .notion-callout-blue {
+  background: #283d54;
+}
+
+.dark .notion-callout-green {
+  background: #294a34;
+}
+
+.dark .notion-callout-yellow {
+  background: #564b2a;
+}
+
+.dark .notion-callout-red {
+  background: #582c2c;
+}
+
+.dark .notion-callout-purple {
+  background: #492d58;
 }
 
 /* ── Horizontal rule ─────────────────────────────────────────────── */
