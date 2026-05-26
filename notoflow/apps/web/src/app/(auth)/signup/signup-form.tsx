@@ -6,13 +6,18 @@ import { signup, signInWith } from "../actions";
 import { Button } from "@notoflow/ui/components/button";
 import { ShieldAlert, Github } from "lucide-react";
 
-export function SignupForm() {
+interface SignupFormProps {
+  redirectTo?: string;
+  prefillEmail?: string;
+}
+
+export function SignupForm({ redirectTo, prefillEmail }: SignupFormProps) {
   const [state, formAction, pending] = useActionState(signup, {} satisfies AuthActionState);
   const [isOauthPending, startOauthTransition] = useTransition();
 
   const handleOAuth = (provider: "google" | "github") => {
     startOauthTransition(async () => {
-      await signInWith(provider);
+      await signInWith(provider, redirectTo);
     });
   };
 
@@ -71,6 +76,8 @@ export function SignupForm() {
       </div>
 
       <form action={formAction} className="space-y-4">
+        {/* Champ caché pour préserver le redirect après inscription */}
+        {redirectTo && <input type="hidden" name="redirect" value={redirectTo} />}
         <div className="space-y-2">
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="name">
             Nom complet
@@ -95,6 +102,7 @@ export function SignupForm() {
             type="email"
             required
             disabled={isPending}
+            defaultValue={prefillEmail || ""}
             placeholder="jean@entreprise.com"
             className="w-full rounded-lg border border-border/80 bg-background/50 px-3.5 py-2.5 text-sm outline-none focus:border-foreground focus:ring-1 focus:ring-foreground transition-all duration-200"
           />

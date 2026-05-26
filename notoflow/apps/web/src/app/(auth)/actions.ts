@@ -37,12 +37,15 @@ export async function signup(
   });
 
   if (error) return { error: error.message };
-  
+
   // Sync profile and initialize workspace
   await getOrCreateProfile();
 
   revalidatePath("/", "layout");
-  redirect("/app");
+
+  // Respecter le redirect param (ex: /invite/TOKEN après inscription depuis une invitation)
+  const redirectTo = (formData.get("redirect") as string) || "/app";
+  redirect(redirectTo);
 }
 
 const loginSchema = z.object({
@@ -70,16 +73,22 @@ export async function login(
   await getOrCreateProfile();
 
   revalidatePath("/", "layout");
-  redirect("/app");
+
+  // Respecter le redirect param (ex: /invite/TOKEN après connexion depuis une invitation)
+  const redirectTo = (formData.get("redirect") as string) || "/app";
+  redirect(redirectTo);
 }
 
-export async function signInWith(provider: "google" | "github") {
+export async function signInWith(provider: "google" | "github", redirectTo?: string) {
   const supabase = await createClient();
   if (!supabase) return { error: SUPABASE_CONFIG_ERROR };
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+  // Encoder le redirect dans le param `next` du callback Supabase
+  const next = redirectTo ? encodeURIComponent(redirectTo) : "/app";
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
-    options: { redirectTo: `${appUrl}/auth/callback` },
+    options: { redirectTo: `${appUrl}/auth/callback?next=${next}` },
   });
   if (error) return { error: error.message };
   if (data.url) redirect(data.url);

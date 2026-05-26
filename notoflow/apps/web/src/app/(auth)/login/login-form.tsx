@@ -6,7 +6,11 @@ import { login, loginWithMagicLink, signInWith } from "../actions";
 import { Button } from "@notoflow/ui/components/button";
 import { Mail, ShieldAlert, Sparkles, Github } from "lucide-react";
 
-export function LoginForm() {
+interface LoginFormProps {
+  redirectTo?: string;
+}
+
+export function LoginForm({ redirectTo }: LoginFormProps) {
   const [authMethod, setAuthMethod] = useState<"password" | "magic">("password");
   const [passwordState, passwordAction, passwordPending] = useActionState(login, {} satisfies AuthActionState);
   const [magicState, magicAction, magicPending] = useActionState(loginWithMagicLink, {} satisfies AuthActionState);
@@ -14,7 +18,7 @@ export function LoginForm() {
 
   const handleOAuth = (provider: "google" | "github") => {
     startOauthTransition(async () => {
-      await signInWith(provider);
+      await signInWith(provider, redirectTo);
     });
   };
 
@@ -76,6 +80,8 @@ export function LoginForm() {
 
       {authMethod === "password" ? (
         <form action={passwordAction} className="space-y-4">
+          {/* Champ caché pour préserver le redirect après connexion */}
+          {redirectTo && <input type="hidden" name="redirect" value={redirectTo} />}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="email">
               Adresse email

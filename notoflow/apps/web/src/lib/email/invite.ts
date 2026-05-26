@@ -45,12 +45,21 @@ export async function sendInviteEmail(options: InviteEmailOptions): Promise<void
 
   const html = buildInviteEmailHtml({ inviterName, workspaceName, inviteUrl, roleLabel });
 
-  await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL || "NotoFlow <noreply@notoflow.app>",
+  const fromAddress = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+
+  const { data, error } = await resend.emails.send({
+    from: fromAddress,
     to,
     subject: `${inviterName} vous invite à rejoindre "${workspaceName}" sur NotoFlow`,
     html,
   });
+
+  if (error) {
+    console.error("[Resend] Erreur d'envoi :", error);
+    throw new Error(`Impossible d'envoyer l'email d'invitation : ${error.message}`);
+  }
+
+  console.log(`[Resend] Email envoyé avec succès → id: ${data?.id}, to: ${to}`);
 }
 
 function buildInviteEmailHtml(opts: {

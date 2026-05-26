@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { SignupForm } from "./signup-form";
 
-export default function SignupPage() {
+interface SignupPageProps {
+  searchParams: Promise<{ redirect?: string; email?: string }>;
+}
+
+export default async function SignupPage({ searchParams }: SignupPageProps) {
+  const { redirect, email } = await searchParams;
+
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background px-6 py-12">
       {/* Background Gradients */}
@@ -26,12 +32,15 @@ export default function SignupPage() {
         </div>
 
         <div className="rounded-2xl border border-border/50 bg-card/65 backdrop-blur-xl p-8 shadow-2xl dark:shadow-indigo-950/20">
-          <SignupForm />
+          <SignupForm redirectTo={redirect} prefillEmail={email} />
         </div>
 
         <p className="px-8 text-center text-sm text-muted-foreground">
           Déjà un compte ?{" "}
-          <Link href="/login" className="underline underline-offset-4 hover:text-foreground font-medium transition-colors">
+          <Link
+            href={redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login"}
+            className="underline underline-offset-4 hover:text-foreground font-medium transition-colors"
+          >
             Se connecter
           </Link>
         </p>
