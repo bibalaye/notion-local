@@ -1,5 +1,16 @@
 import { useWorkspaceStore } from "../store/useWorkspaceStore";
-import { getWorkspaces, createWorkspace, getWorkspace, addWorkspaceMember } from "@/app/app/actions/workspace";
+import {
+  getWorkspaces,
+  createWorkspace,
+  getWorkspace,
+  addWorkspaceMember,
+  inviteMember,
+  getWorkspaceInvites,
+  revokeInvite,
+  generateInviteLink,
+  updateWorkspaceMemberRole,
+  removeWorkspaceMember,
+} from "@/app/app/actions/workspace";
 import {
   getWorkspacePages,
   createPage,
@@ -27,6 +38,12 @@ export const api = {
       return ws?.members || [];
     },
     inviteMember: addWorkspaceMember,
+    invite: inviteMember,
+    getInvites: getWorkspaceInvites,
+    revokeInvite,
+    generateInviteLink,
+    updateMemberRole: updateWorkspaceMemberRole,
+    removeMember: removeWorkspaceMember,
   },
   pages: {
     getTree: async () => {

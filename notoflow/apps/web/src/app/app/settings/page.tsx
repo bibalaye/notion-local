@@ -25,8 +25,27 @@ import {
   Download,
   FileText,
   Code2,
+  Mail,
+  Clock,
+  ChevronDown,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
+
+const ROLE_OPTIONS = [
+  { value: "EDITOR", label: "Éditeur" },
+  { value: "VIEWER", label: "Lecteur" },
+  { value: "GUEST", label: "Invité" },
+  { value: "ADMIN", label: "Administrateur" },
+] as const;
+
+const ROLE_LABELS: Record<string, string> = {
+  OWNER: "Propriétaire",
+  ADMIN: "Administrateur",
+  EDITOR: "Éditeur",
+  VIEWER: "Lecteur",
+  GUEST: "Invité",
+};
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
@@ -73,23 +92,80 @@ export default function SettingsPage() {
 
   // Invite member state
   const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"EDITOR" | "VIEWER" | "GUEST" | "ADMIN">("VIEWER");
+  const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+  const [linkRole, setLinkRole] = useState<"EDITOR" | "VIEWER" | "GUEST">("VIEWER");
+
+  // Fetch pending invites
+  const { data: pendingInvites, isLoading: isInvitesLoading } = useQuery({
+    queryKey: ["workspace-invites", activeWorkspaceId],
+    queryFn: () => api.workspaces.getInvites(activeWorkspaceId || ""),
+    enabled: !!activeWorkspaceId && activeTab === "workspace",
+  });
+
   const inviteMutation = useMutation({
     mutationFn: ({ email, role }: { email: string; role: any }) =>
-      api.workspaces.inviteMember(activeWorkspaceId || "", email, role),
+      api.workspaces.invite(activeWorkspaceId || "", email, role),
     onSuccess: () => {
       toast.success("Invitation envoyée !");
       setInviteEmail("");
-      queryClient.invalidateQueries({ queryKey: ["workspace-members", activeWorkspaceId] });
+      queryClient.invalidateQueries({ queryKey: ["workspace-invites", activeWorkspaceId] });
     },
     onError: (err: any) => {
       toast.error(err.message || "Erreur lors de l'invitation.");
     },
   });
 
+  const revokeInviteMutation = useMutation({
+    mutationFn: (inviteId: string) => api.workspaces.revokeInvite(inviteId),
+    onSuccess: () => {
+      toast.success("Invitation révoquée.");
+      queryClient.invalidateQueries({ queryKey: ["workspace-invites", activeWorkspaceId] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Erreur lors de la révocation.");
+    },
+  });
+
+  const updateRoleMutation = useMutation({
+    mutationFn: ({ memberId, role }: { memberId: string; role: "OWNER" | "ADMIN" | "EDITOR" | "VIEWER" | "GUEST" }) =>
+      api.workspaces.updateMemberRole(activeWorkspaceId || "", memberId, role),
+    onSuccess: () => {
+      toast.success("Rôle mis à jour.");
+      queryClient.invalidateQueries({ queryKey: ["workspace-members", activeWorkspaceId] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Erreur lors de la mise à jour du rôle.");
+    },
+  });
+
+  const removeMemberMutation = useMutation({
+    mutationFn: (memberId: string) =>
+      api.workspaces.removeMember(activeWorkspaceId || "", memberId),
+    onSuccess: () => {
+      toast.success("Membre retiré de l'espace.");
+      queryClient.invalidateQueries({ queryKey: ["workspace-members", activeWorkspaceId] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Erreur lors de la suppression du membre.");
+    },
+  });
+
+  const generateLinkMutation = useMutation({    mutationFn: (role: "EDITOR" | "VIEWER" | "GUEST") =>
+      api.workspaces.generateInviteLink(activeWorkspaceId || "", role),
+    onSuccess: (link) => {
+      setGeneratedLink(link);
+      queryClient.invalidateQueries({ queryKey: ["workspace-invites", activeWorkspaceId] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Erreur lors de la génération du lien.");
+    },
+  });
+
   const handleInvite = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteEmail.trim()) return;
-    inviteMutation.mutate({ email: inviteEmail, role: "VIEWER" });
+    inviteMutation.mutate({ email: inviteEmail, role: inviteRole });
   };
 
   // API Key creation
@@ -273,22 +349,157 @@ export default function SettingsPage() {
                 <p className="text-[11px] text-muted-foreground">Gérez les accès de votre équipe.</p>
               </div>
 
-              {/* Invite Form */}
-              <form onSubmit={handleInvite} className="flex gap-2 max-w-md">
-                <input
-                  required
-                  type="email"
-                  placeholder="Adresse email du collaborateur..."
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  className="flex-1 rounded-lg border border-border bg-background/50 px-3 py-2 text-xs outline-none focus:border-foreground"
-                />
-                <Button size="sm" type="submit" disabled={inviteMutation.isPending} className="gap-1 text-xs">
-                  <UserPlus className="h-3.5 w-3.5" /> Inviter
-                </Button>
-              </form>
+              {/* ── Inviter par email ── */}
+              <div className="space-y-2">
+                <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <Mail className="h-3 w-3" /> Inviter par email
+                </div>
+                <form onSubmit={handleInvite} className="flex gap-2 max-w-lg">
+                  <input
+                    required
+                    type="email"
+                    placeholder="Adresse email du collaborateur..."
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    className="flex-1 rounded-lg border border-border bg-background/50 px-3 py-2 text-xs outline-none focus:border-foreground"
+                  />
+                  {/* Sélecteur de rôle */}
+                  <div className="relative">
+                    <select
+                      value={inviteRole}
+                      onChange={(e) => setInviteRole(e.target.value as any)}
+                      className="appearance-none h-full rounded-lg border border-border bg-background/50 pl-3 pr-7 text-xs outline-none focus:border-foreground cursor-pointer"
+                    >
+                      {ROLE_OPTIONS.map((r) => (
+                        <option key={r.value} value={r.value}>
+                          {r.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                  </div>
+                  <Button size="sm" type="submit" disabled={inviteMutation.isPending} className="gap-1 text-xs shrink-0">
+                    <UserPlus className="h-3.5 w-3.5" />
+                    {inviteMutation.isPending ? "Envoi..." : "Inviter"}
+                  </Button>
+                </form>
+              </div>
 
-              {/* Members List */}
+              {/* ── Lien d'invitation universel ── */}
+              <div className="space-y-2">
+                <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <Link2 className="h-3 w-3" /> Lien d&apos;invitation
+                </div>
+                <div className="flex gap-2 items-center max-w-lg">
+                  {generatedLink ? (
+                    <>
+                      <code className="flex-1 bg-background border border-border px-3 py-2 rounded-lg text-[11px] font-mono text-indigo-400 overflow-x-auto whitespace-nowrap scrollbar-none select-all">
+                        {generatedLink}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(generatedLink);
+                          toast.success("Lien copié !");
+                        }}
+                        className="p-2 hover:bg-accent rounded-lg border border-border bg-background transition-colors text-muted-foreground hover:text-foreground cursor-pointer"
+                        title="Copier le lien"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setGeneratedLink(null)}
+                        className="p-2 hover:bg-accent rounded-lg border border-border bg-background transition-colors text-muted-foreground hover:text-foreground cursor-pointer"
+                        title="Fermer"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="relative">
+                        <select
+                          value={linkRole}
+                          onChange={(e) => setLinkRole(e.target.value as any)}
+                          className="appearance-none h-full rounded-lg border border-border bg-background/50 pl-3 pr-7 py-2 text-xs outline-none focus:border-foreground cursor-pointer"
+                        >
+                          <option value="VIEWER">Lecteur</option>
+                          <option value="EDITOR">Éditeur</option>
+                          <option value="GUEST">Invité</option>
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        type="button"
+                        disabled={generateLinkMutation.isPending}
+                        onClick={() => generateLinkMutation.mutate(linkRole)}
+                        className="gap-1.5 text-xs"
+                      >
+                        <Link2 className="h-3.5 w-3.5" />
+                        {generateLinkMutation.isPending ? "Génération..." : "Générer un lien"}
+                      </Button>
+                    </>
+                  )}
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  N&apos;importe qui avec ce lien peut rejoindre l&apos;espace. Valable 7 jours.
+                </p>
+              </div>
+
+              {/* ── Invitations en attente ── */}
+              {(pendingInvites && pendingInvites.length > 0) && (
+                <div className="space-y-2.5">
+                  <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <Clock className="h-3 w-3" /> Invitations en attente ({pendingInvites.length})
+                  </div>
+                  <div className="divide-y divide-border/30 rounded-xl border border-border/40 overflow-hidden">
+                    {isInvitesLoading ? (
+                      <div className="h-12 bg-muted/20 animate-pulse" />
+                    ) : (
+                      pendingInvites.map((invite) => {
+                        const daysLeft = Math.ceil(
+                          (new Date(invite.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+                        );
+                        return (
+                          <div key={invite.id} className="flex items-center justify-between px-4 py-3 bg-card/30">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="h-7 w-7 rounded-full bg-muted/50 border border-border flex items-center justify-center shrink-0">
+                                {invite.email ? (
+                                  <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                                ) : (
+                                  <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-foreground truncate">
+                                  {invite.email || "Lien universel"}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground">
+                                  {ROLE_LABELS[invite.role] || invite.role} · expire dans {daysLeft}j
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => revokeInviteMutation.mutate(invite.id)}
+                              disabled={revokeInviteMutation.isPending}
+                              className="p-1.5 rounded-lg hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors cursor-pointer"
+                              title="Révoquer l'invitation"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Membres actuels ── */}
               <div className="space-y-2.5">
                 <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                   Membres actuels
@@ -296,25 +507,87 @@ export default function SettingsPage() {
                 {isMembersLoading ? (
                   <div className="h-12 bg-muted/20 animate-pulse rounded-lg" />
                 ) : (
-                  <div className="divide-y divide-border/30">
-                    {members?.map((m) => (
-                      <div key={m.id} className="flex items-center justify-between py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-muted-foreground">
-                            {m.user.name?.[0] || m.user.email[0]}
+                  <div className="divide-y divide-border/30 rounded-xl border border-border/40 overflow-hidden">
+                    {members?.map((m) => {
+                      // Déterminer si l'utilisateur courant est propriétaire
+                      const currentUserMember = members.find(
+                        (mb) => mb.user.email === members.find((x) => x.role === "OWNER")?.user.email,
+                      );
+                      const isOwnerView = members.some(
+                        (mb) => mb.role === "OWNER" && mb.user.id === m.user.id,
+                      );
+                      // On affiche les contrôles si le membre courant est OWNER ou ADMIN
+                      // (on récupère le rôle du viewer via la liste)
+                      const viewerRole = members.find((mb) => mb.id !== m.id)?.role;
+                      const canManage =
+                        members.some((mb) => mb.role === "OWNER") &&
+                        m.role !== "OWNER";
+
+                      return (
+                        <div key={m.id} className="flex items-center justify-between px-4 py-3 bg-card/20 hover:bg-card/40 transition-colors">
+                          {/* Avatar + infos */}
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
+                              {(m.user.name?.[0] || m.user.email[0]).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="text-xs font-semibold text-foreground truncate">
+                                {m.user.name || "Utilisateur sans nom"}
+                              </h4>
+                              <p className="text-[10px] text-muted-foreground truncate">{m.user.email}</p>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="text-xs font-semibold text-foreground">
-                              {m.user.name || "Utilisateur sans nom"}
-                            </h4>
-                            <p className="text-[10px] text-muted-foreground">{m.user.email}</p>
+
+                          {/* Contrôles droite */}
+                          <div className="flex items-center gap-2 shrink-0 ml-3">
+                            {m.role === "OWNER" ? (
+                              /* Propriétaire — badge non modifiable */
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded uppercase tracking-wider">
+                                <Shield className="h-2.5 w-2.5" /> Propriétaire
+                              </span>
+                            ) : (
+                              <>
+                                {/* Sélecteur de rôle */}
+                                <div className="relative">
+                                  <select
+                                    value={m.role}
+                                    disabled={updateRoleMutation.isPending}
+                                    onChange={(e) =>
+                                      updateRoleMutation.mutate({
+                                        memberId: m.id,
+                                        role: e.target.value as any,
+                                      })
+                                    }
+                                    className="appearance-none rounded-lg border border-border bg-background/60 pl-2.5 pr-6 py-1 text-[10px] font-semibold outline-none focus:border-foreground cursor-pointer text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    <option value="ADMIN">Administrateur</option>
+                                    <option value="EDITOR">Éditeur</option>
+                                    <option value="VIEWER">Lecteur</option>
+                                    <option value="GUEST">Invité</option>
+                                  </select>
+                                  <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 h-2.5 w-2.5 text-muted-foreground" />
+                                </div>
+
+                                {/* Bouton retirer */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (confirm(`Retirer ${m.user.name || m.user.email} de l'espace de travail ?`)) {
+                                      removeMemberMutation.mutate(m.id);
+                                    }
+                                  }}
+                                  disabled={removeMemberMutation.isPending}
+                                  className="p-1.5 rounded-lg hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                  title="Retirer ce membre"
+                                >
+                                  <Trash className="h-3.5 w-3.5" />
+                                </button>
+                              </>
+                            )}
                           </div>
                         </div>
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase tracking-wider">
-                          <Shield className="h-2.5 w-2.5" /> {m.role}
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>

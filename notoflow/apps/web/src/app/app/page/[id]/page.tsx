@@ -1,5 +1,6 @@
 import { getPage } from "@/app/app/actions/pages";
 import { getOrCreateProfile } from "@/lib/supabase/auth-helper";
+import { db } from "@notoflow/database";
 import { PageEditorClient } from "./PageEditorClient";
 import { redirect } from "next/navigation";
 
@@ -18,11 +19,21 @@ export default async function DocumentPage({ params }: PageProps) {
       redirect("/login");
     }
 
+    // Récupérer le rôle du membre courant dans ce workspace
+    let userRole: string | null = null;
+    if (user) {
+      const membership = await db.workspaceMember.findUnique({
+        where: { userId_workspaceId: { userId: user.id, workspaceId: page.workspaceId } },
+        select: { role: true },
+      });
+      userRole = membership?.role ?? null;
+    }
+
     // Convert decimal or other json values safely
     const serializedPage = JSON.parse(JSON.stringify(page));
     const serializedUser = user ? JSON.parse(JSON.stringify(user)) : null;
 
-    return <PageEditorClient page={serializedPage} currentUser={serializedUser} />;
+    return <PageEditorClient page={serializedPage} currentUser={serializedUser} userRole={userRole} />;
   } catch (err: any) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center h-[80vh] space-y-4">

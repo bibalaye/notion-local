@@ -104,6 +104,8 @@ interface PageEditorClientProps {
     name: string | null;
     avatarUrl: string | null;
   } | null;
+  /** Rôle du membre courant dans le workspace. null = page publique non connectée. */
+  userRole?: string | null;
 }
 
 const CURSOR_COLORS = [
@@ -119,7 +121,7 @@ const CURSOR_COLORS = [
   "#ec4899",
 ];
 
-export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
+export function PageEditorClient({ page, currentUser, userRole }: PageEditorClientProps) {
   const router = useRouter();
   const [title, setTitle] = useState(page.title);
   const [icon, setIcon] = useState<string | null>(page.icon);
@@ -127,7 +129,10 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
   const [isPublic, setIsPublic] = useState(page.isPublic);
   const [isFav, setIsFav] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "pending" | "saving" | "saved" | "error">("idle");
-  const isReadOnly = !currentUser;
+
+  // Lecture seule si : non connecté, ou rôle VIEWER/GUEST (pas de droit d'écriture)
+  const READ_ONLY_ROLES = ["VIEWER", "GUEST"];
+  const isReadOnly = !currentUser || (userRole != null && READ_ONLY_ROLES.includes(userRole));
 
   // Floating controls popovers
   const [showIconPicker, setShowIconPicker] = useState(false);
@@ -1020,6 +1025,19 @@ export function PageEditorClient({ page, currentUser }: PageEditorClientProps) {
                   </div>
                 </>
               )}
+            </div>
+          )}
+
+          {/* Bandeau lecture seule — visible uniquement pour VIEWER/GUEST */}
+          {isReadOnly && currentUser && (
+            <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-amber-500/8 border border-amber-500/20 text-amber-500/90">
+              <Lock className="h-3.5 w-3.5 shrink-0" />
+              <p className="text-[11px] font-medium">
+                Vous consultez cette page en lecture seule.{" "}
+                <span className="text-amber-500/60">
+                  {userRole === "GUEST" ? "Les invités" : "Les lecteurs"} ne peuvent pas modifier le contenu.
+                </span>
+              </p>
             </div>
           )}
 
