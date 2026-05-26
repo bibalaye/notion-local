@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Topbar } from "@/components/layout/Topbar";
+import { ElectronTitleBar } from "@/components/layout/ElectronTitleBar";
 import { CommandPalette } from "@/components/search/CommandPalette";
 import { AiPanel } from "@/components/ai/AiPanel";
 import { QueryProvider } from "@/lib/react-query/provider";
@@ -15,6 +16,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <ThemeProvider>
       <QueryProvider>
         <SidebarProvider>
+          {/* Barre de titre custom Electron (Windows/Linux uniquement) */}
+          <ElectronTitleBar />
           <div className="flex h-screen w-screen overflow-hidden bg-background">
             <AppSidebar />
             <main className="flex min-w-0 flex-1 flex-col overflow-hidden">

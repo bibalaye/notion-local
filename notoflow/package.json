@@ -12,7 +12,13 @@
     "format:check": "prettier -c .",
     "db:generate": "dotenv -e .env.local -- pnpm --filter @notoflow/database prisma:generate",
     "db:push": "dotenv -e .env.local -- pnpm --filter @notoflow/database prisma:push",
-    "db:seed": "dotenv -e .env.local -- pnpm --filter @notoflow/database seed"
+    "db:seed": "dotenv -e .env.local -- pnpm --filter @notoflow/database seed",
+    "desktop:dev": "pnpm --filter @notoflow/desktop dev",
+    "desktop:build": "pnpm --filter @notoflow/desktop build",
+    "desktop:dist": "pnpm --filter @notoflow/desktop dist",
+    "desktop:dist:win": "pnpm --filter @notoflow/desktop dist:win",
+    "desktop:dist:mac": "pnpm --filter @notoflow/desktop dist:mac",
+    "desktop:dist:linux": "pnpm --filter @notoflow/desktop dist:linux"
   },
   "devDependencies": {
     "dotenv-cli": "^11.0.0",

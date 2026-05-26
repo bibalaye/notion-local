@@ -15,6 +15,15 @@
         "VERCEL"
       ]
     },
+    "build:electron": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "dist": {
+      "dependsOn": ["build", "build:electron"],
+      "outputs": ["release/**"],
+      "cache": false
+    },
     "lint": {
       "dependsOn": ["^build"]
     },
