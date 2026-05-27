@@ -8,9 +8,9 @@
     "dev": "concurrently --kill-others \"pnpm dev:next\" \"pnpm dev:electron\"",
     "dev:next": "pnpm --filter @notoflow/web dev",
     "dev:electron": "wait-on http://localhost:3000 && tsc -p tsconfig.electron.json && electron .",
-    "build": "pnpm build:next && pnpm build:electron && pnpm dist",
-    "build:next": "pnpm --filter @notoflow/web build",
+    "build": "node scripts/build-prod.js",
     "build:electron": "tsc -p tsconfig.electron.json",
+    "bundle:node": "node scripts/download-node.js",
     "dist": "electron-builder",
     "dist:win": "electron-builder --win",
     "dist:mac": "electron-builder --mac",
@@ -36,37 +36,25 @@
     },
     "files": [
       "dist/**/*",
-      "assets/**/*",
-      "node_modules/**/*",
       "package.json"
     ],
     "extraResources": [
       {
-        "from": "../web/.next/standalone",
+        "from": "standalone-flat",
         "to": "app",
         "filter": ["**/*"]
       },
       {
-        "from": "../web/.next/static",
-        "to": "app/.next/static",
-        "filter": ["**/*"]
-      },
-      {
-        "from": "../web/public",
-        "to": "app/public",
-        "filter": ["**/*"]
+        "from": "bundled-node/node.exe",
+        "to": "node.exe"
       }
     ],
     "win": {
-      "target": [
-        { "target": "nsis", "arch": ["x64"] }
-      ],
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
       "icon": "assets/icon.ico"
     },
     "mac": {
-      "target": [
-        { "target": "dmg", "arch": ["x64", "arm64"] }
-      ],
+      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
       "icon": "assets/icon.icns",
       "category": "public.app-category.productivity"
     },

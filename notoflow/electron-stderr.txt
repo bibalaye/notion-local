@@ -1,0 +1,1102 @@
+[14128:0526/201254.474:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+[Next.js Error] [32040:0526/201254.882:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+[14128:0526/201255.233:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[14128:0526/201255.238:ERROR:disk_cache.cc(216)] Unable to create cache
+[14128:0526/201255.238:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[Next.js Error] [32040:0526/201255.281:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+[Next.js Error] [32040:0526/201255.325:ERROR:disk_cache.cc(216)] Unable to create cache
+[32040:0526/201255.325:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+[Next.js Error] [32040:0526/201255.325:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[32040:0526/201255.325:ERROR:disk_cache.cc(216)] Unable to create cache
+[32040:0526/201255.325:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+[Next.js Error] [Next.js Error] [33552:0526/201255.440:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [16192:0526/201255.994:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+
+
+[Next.js Error] [Next.js Error] [33552:0526/201255.855:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+[Next.js Error] [Next.js Error] [33552:0526/201256.060:ERROR:disk_cache.cc(216)] Unable to create cache
+[33552:0526/201256.060:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+[Next.js Error] [33552:0526/201255.867:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+[Next.js Error] [Next.js Error] [33552:0526/201256.061:ERROR:disk_cache.cc(216)] Unable to create cache
+[33552:0526/201256.061:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+[Next.js Error] [Next.js Error] [33552:0526/201255.855:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[33552:0526/201256.158:ERROR:disk_cache.cc(216)] Unable to create cache
+
+
+[Next.js Error] [Next.js Error] [33552:0526/201256.158:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [16192:0526/201256.424:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [16192:0526/201256.427:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [16192:0526/201256.524:ERROR:disk_cache.cc(216)] Unable to create cache
+[16192:0526/201256.524:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[16192:0526/201256.524:ERROR:disk_cache.cc(216)] Unable to create cache
+[16192:0526/201256.524:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [16192:0526/201256.524:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [16192:0526/201256.543:ERROR:disk_cache.cc(216)] Unable to create cache
+[16192:0526/201256.543:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [36308:0526/201256.650:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [36308:0526/201257.048:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [36308:0526/201257.116:ERROR:disk_cache.cc(216)] Unable to create cache
+[36308:0526/201257.116:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [36308:0526/201257.530:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [36308:0526/201257.531:ERROR:disk_cache.cc(216)] Unable to create cache
+[36308:0526/201257.531:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [27912:0526/201257.709:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [24212:0526/201258.156:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [36308:0526/201258.334:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+[Next.js Error] [Next.js Error] [36308:0526/201258.334:ERROR:disk_cache.cc(216)] Unable to create cache
+[36308:0526/201258.334:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[Next.js Error] [27912:0526/201258.334:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[27912:0526/201258.334:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[27912:0526/201258.334:ERROR:disk_cache.cc(216)] Unable to create cache
+[27912:0526/201258.334:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [27912:0526/201258.334:ERROR:disk_cache.cc(216)] Unable to create cache
+[27912:0526/201258.334:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [27912:0526/201258.528:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[27912:0526/201258.528:ERROR:disk_cache.cc(216)] Unable to create cache
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [27912:0526/201258.528:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [34920:0526/201258.450:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [24212:0526/201258.724:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[24212:0526/201258.724:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[24212:0526/201258.725:ERROR:disk_cache.cc(216)] Unable to create cache
+[24212:0526/201258.725:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [24212:0526/201258.725:ERROR:disk_cache.cc(216)] Unable to create cache
+[24212:0526/201258.725:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [24212:0526/201258.763:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [24212:0526/201258.972:ERROR:disk_cache.cc(216)] Unable to create cache
+[24212:0526/201258.973:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+(node:14128) electron: Failed to load URL: http://localhost:3100/ with error: ERR_CONNECTION_REFUSED
+(Use `NotoFlow --trace-warnings ...` to show where the warning was created)
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [34920:0526/201259.304:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[34920:0526/201259.305:ERROR:disk_cache.cc(216)] Unable to create cache
+[34920:0526/201259.305:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[34920:0526/201259.305:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[34920:0526/201259.306:ERROR:disk_cache.cc(216)] Unable to create cache
+[34920:0526/201259.306:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[34920:0526/201259.306:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[34920:0526/201259.306:ERROR:disk_cache.cc(216)] Unable to create cache
+[34920:0526/201259.306:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [28196:0526/201307.913:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] (node:33552) electron: Failed to load URL: http://localhost:3100/ with error: ERR_CONNECTION_REFUSED
+(Use `NotoFlow --trace-warnings ...` to show where the warning was created)
+
+
+[Next.js Error] (node:32040) electron: Failed to load URL: http://localhost:3100/ with error: ERR_CONNECTION_REFUSED
+(Use `NotoFlow --trace-warnings ...` to show where the warning was created)
+[Next.js Error] [Next.js Error] (node:16192) electron: Failed to load URL: http://localhost:3100/ with error: ERR_CONNECTION_REFUSED
+(Use `NotoFlow --trace-warnings ...` to show where the warning was created)
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] (node:24212) electron: Failed to load URL: http://localhost:3100/ with error: ERR_CONNECTION_REFUSED
+(Use `NotoFlow --trace-warnings ...` to show where the warning was created)
+
+[Next.js Error] [Next.js Error] [Next.js Error] [28196:0526/201313.675:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [1052:0526/201307.589:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+[Next.js Error] [36588:0526/201308.043:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+[1052:0526/201311.511:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[1052:0526/201311.511:ERROR:disk_cache.cc(216)] Unable to create cache
+[1052:0526/201311.511:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[Next.js Error] [Next.js Error] [20292:0526/201309.677:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+[36588:0526/201312.997:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+[Next.js Error] [36588:0526/201313.001:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+[Next.js Error] [36588:0526/201313.001:ERROR:disk_cache.cc(216)] Unable to create cache
+[36588:0526/201313.001:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[36588:0526/201313.002:ERROR:disk_cache.cc(216)] Unable to create cache
+[36588:0526/201313.002:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+[Next.js Error] [Next.js Error] [Next.js Error] [22868:0526/201310.199:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+
+
+[Next.js Error] [Next.js Error] [20292:0526/201313.130:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+[Next.js Error] [Next.js Error] [20292:0526/201313.132:ERROR:disk_cache.cc(216)] Unable to create cache
+[20292:0526/201313.132:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+[Next.js Error] [Next.js Error] [20292:0526/201313.133:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+[Next.js Error] [Next.js Error] [20292:0526/201313.133:ERROR:disk_cache.cc(216)] Unable to create cache
+[20292:0526/201313.134:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+[Next.js Error] [Next.js Error] [20292:0526/201313.135:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[20292:0526/201313.135:ERROR:disk_cache.cc(216)] Unable to create cache
+
+
+[Next.js Error] [Next.js Error] [20292:0526/201313.135:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+[1052:0526/201313.691:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[1052:0526/201313.691:ERROR:disk_cache.cc(216)] Unable to create cache
+[1052:0526/201313.691:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[Next.js Error] [Next.js Error] [Next.js Error] [22868:0526/201313.718:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+[Next.js Error] [28196:0526/201314.078:ERROR:disk_cache.cc(216)] Unable to create cache
+[28196:0526/201314.078:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+[Next.js Error] [28196:0526/201314.097:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+[Next.js Error] [28196:0526/201314.097:ERROR:disk_cache.cc(216)] Unable to create cache
+[28196:0526/201314.097:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [22868:0526/201314.145:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+[Next.js Error] [28196:0526/201314.303:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[28196:0526/201314.303:ERROR:disk_cache.cc(216)] Unable to create cache
+[28196:0526/201314.303:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+[Next.js Error] [Next.js Error] (node:34920) electron: Failed to load URL: http://localhost:3100/ with error: ERR_CONNECTION_REFUSED
+(Use `NotoFlow --trace-warnings ...` to show where the warning was created)
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [18968:0526/201310.674:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+[18968:0526/201314.140:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[Next.js Error] [21612:0526/201311.545:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+[21612:0526/201313.723:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[Next.js Error] [35408:0526/201312.158:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+[35408:0526/201314.304:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+[21612:0526/201314.450:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[21612:0526/201314.451:ERROR:disk_cache.cc(216)] Unable to create cache
+[21612:0526/201314.451:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[21612:0526/201314.452:ERROR:disk_cache.cc(216)] Unable to create cache
+[21612:0526/201314.454:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+[18968:0526/201315.040:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[18968:0526/201315.041:ERROR:disk_cache.cc(216)] Unable to create cache
+[18968:0526/201315.041:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[18968:0526/201315.043:ERROR:disk_cache.cc(216)] Unable to create cache
+[18968:0526/201315.043:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+[Next.js Error] [Next.js Error] [22868:0526/201315.054:ERROR:disk_cache.cc(216)] Unable to create cache
+[22868:0526/201315.054:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[22868:0526/201315.054:ERROR:disk_cache.cc(216)] Unable to create cache
+[22868:0526/201315.054:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+[Next.js Error] [Next.js Error] [22868:0526/201315.068:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+[Next.js Error] [Next.js Error] [22868:0526/201315.073:ERROR:disk_cache.cc(216)] Unable to create cache
+[22868:0526/201315.073:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [35408:0526/201315.270:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [37592:0526/201313.746:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+[Next.js Error] [21404:0526/201313.778:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [35408:0526/201315.271:ERROR:disk_cache.cc(216)] Unable to create cache
+[35408:0526/201315.271:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [35408:0526/201315.272:ERROR:disk_cache.cc(216)] Unable to create cache
+[35408:0526/201315.272:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [35408:0526/201315.284:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[35408:0526/201315.285:ERROR:disk_cache.cc(216)] Unable to create cache
+[35408:0526/201315.285:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+[36588:0526/201315.296:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[36588:0526/201315.296:ERROR:disk_cache.cc(216)] Unable to create cache
+[36588:0526/201315.296:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [21612:0526/201315.426:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[21612:0526/201315.427:ERROR:disk_cache.cc(216)] Unable to create cache
+[21612:0526/201315.427:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+[1052:0526/201315.465:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[1052:0526/201315.465:ERROR:disk_cache.cc(216)] Unable to create cache
+[1052:0526/201315.466:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [37592:0526/201315.473:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [18968:0526/201315.760:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[18968:0526/201315.760:ERROR:disk_cache.cc(216)] Unable to create cache
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [18968:0526/201315.760:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [37592:0526/201316.061:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [37592:0526/201316.065:ERROR:disk_cache.cc(216)] Unable to create cache
+[37592:0526/201316.065:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [37592:0526/201316.069:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [36908:0526/201313.894:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+[21404:0526/201315.571:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[21404:0526/201315.572:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[21404:0526/201315.573:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[21404:0526/201315.579:ERROR:disk_cache.cc(216)] Unable to create cache
+[21404:0526/201315.579:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[21404:0526/201315.579:ERROR:disk_cache.cc(216)] Unable to create cache
+[21404:0526/201315.579:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[21404:0526/201315.579:ERROR:disk_cache.cc(216)] Unable to create cache
+[21404:0526/201315.579:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [37592:0526/201316.071:ERROR:disk_cache.cc(216)] Unable to create cache
+[37592:0526/201316.073:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[37592:0526/201316.073:ERROR:disk_cache.cc(216)] Unable to create cache
+[37592:0526/201316.073:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+
+
+(node:27912) electron: Failed to load URL: http://localhost:3100/ with error: ERR_CONNECTION_REFUSED
+(Use `NotoFlow --trace-warnings ...` to show where the warning was created)
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] (node:36308) electron: Failed to load URL: http://localhost:3100/ with error: ERR_CONNECTION_REFUSED
+(Use `NotoFlow --trace-warnings ...` to show where the warning was created)
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [31100:0526/201314.313:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+[Next.js Error] [9752:0526/201315.004:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+[Next.js Error] [Next.js Error] [19604:0526/201316.032:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [36908:0526/201316.604:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [36908:0526/201316.610:ERROR:disk_cache.cc(216)] Unable to create cache
+[36908:0526/201316.610:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [31100:0526/201316.043:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [31100:0526/201316.659:ERROR:disk_cache.cc(216)] Unable to create cache
+[31100:0526/201316.659:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [31100:0526/201316.053:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [31100:0526/201316.705:ERROR:disk_cache.cc(216)] Unable to create cache
+[31100:0526/201316.705:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [31100:0526/201316.063:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [31100:0526/201316.721:ERROR:disk_cache.cc(216)] Unable to create cache
+[31100:0526/201316.721:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [36908:0526/201316.285:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [36908:0526/201316.880:ERROR:disk_cache.cc(216)] Unable to create cache
+[36908:0526/201316.880:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [36908:0526/201316.285:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+[Next.js Error] [36908:0526/201316.889:ERROR:disk_cache.cc(216)] Unable to create cache
+[36908:0526/201316.889:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+[Next.js Error] [Next.js Error] [Next.js Error] [9752:0526/201316.333:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [9752:0526/201316.337:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[9752:0526/201316.965:ERROR:disk_cache.cc(216)] Unable to create cache
+[9752:0526/201316.965:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [9752:0526/201316.965:ERROR:disk_cache.cc(216)] Unable to create cache
+[9752:0526/201316.965:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[9752:0526/201316.341:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [9752:0526/201316.965:ERROR:disk_cache.cc(216)] Unable to create cache
+[9752:0526/201316.965:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [19604:0526/201317.870:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [19604:0526/201317.873:ERROR:disk_cache.cc(216)] Unable to create cache
+[19604:0526/201317.873:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [19604:0526/201317.878:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [19604:0526/201317.885:ERROR:disk_cache.cc(216)] Unable to create cache
+[19604:0526/201317.885:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [19604:0526/201317.901:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [19604:0526/201317.901:ERROR:disk_cache.cc(216)] Unable to create cache
+[19604:0526/201317.902:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [31272:0526/201321.420:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [31272:0526/201322.040:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [31272:0526/201322.251:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [31272:0526/201322.268:ERROR:disk_cache.cc(216)] Unable to create cache
+[31272:0526/201322.268:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [31272:0526/201322.272:ERROR:disk_cache.cc(216)] Unable to create cache
+[31272:0526/201322.272:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [31272:0526/201322.286:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[31272:0526/201322.287:ERROR:disk_cache.cc(216)] Unable to create cache
+[31272:0526/201322.287:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [23544:0526/201324.689:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [23544:0526/201329.066:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [23544:0526/201329.079:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [30100:0526/201325.003:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [23544:0526/201329.098:ERROR:disk_cache.cc(216)] Unable to create cache
+[23544:0526/201329.098:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [23544:0526/201329.098:ERROR:disk_cache.cc(216)] Unable to create cache
+[23544:0526/201329.098:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [23544:0526/201329.108:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+[23544:0526/201329.109:ERROR:disk_cache.cc(216)] Unable to create cache
+[23544:0526/201329.109:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [30100:0526/201329.270:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [30100:0526/201329.279:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [34484:0526/201327.316:WARNING:electron_api_native_image.cc(197)] Failed to load image from path 'C:\Users\abibou\Desktop\notion-local\notoflow\apps\desktop\release\win-unpacked\resources\assets\icon.ico'
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [30100:0526/201329.292:ERROR:disk_cache.cc(216)] Unable to create cache
+[30100:0526/201329.292:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+[30100:0526/201329.292:ERROR:disk_cache.cc(216)] Unable to create cache
+[30100:0526/201329.292:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [30100:0526/201329.316:ERROR:cache_util_win.cc(20)] Unable to move the cache: Accès refusé. (0x5)
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [30100:0526/201329.316:ERROR:disk_cache.cc(216)] Unable to create cache
+[30100:0526/201329.316:ERROR:gpu_disk_cache.cc(711)] Gpu Cache Creation failed: -2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] (node:36588) electron: Failed to load URL: http://localhost:3100/ with error: ERR_CONNECTION_REFUSED
+(Use `NotoFlow --trace-warnings ...` to show where the warning was created)
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] (node:36908) electron: Failed to load URL: http://localhost:3100/ with error: ERR_CONNECTION_REFUSED
+(Use `NotoFlow --trace-warnings ...` to show where the warning was created)
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] [Next.js Error] (node:21612) electron: Failed to load URL: http://localhost:3100/ with error: ERR_CONNECTION_REFUSED
+(Use `NotoFlow --trace-warnings ...` to show where the warning was created)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Next.js Error] [Next.js Error] [33552:0526/201402.858:ERROR:network_service_instance_impl.cc(612)] Network service crashed, restarting service.
+
+

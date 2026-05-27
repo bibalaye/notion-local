@@ -50,7 +50,44 @@ Placer dans `apps/desktop/assets/` :
 - `icon.icns` — macOS
 - `icon.png` — Linux (512×512 recommandé)
 
-## Fonctionnalités desktop
+## Sécurité — Gestion des variables d'environnement
+
+### Principe
+
+Les secrets ne sont **jamais** bundlés dans l'installeur. Voici comment chaque type de variable est géré :
+
+| Variable | Type | Stockage |
+|----------|------|---------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Publique | `AppData/NotoFlow/config/public.json` (clair) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Publique | `AppData/NotoFlow/config/public.json` (clair) |
+| `DATABASE_URL` | **Secret** | `AppData/NotoFlow/config/secrets.enc` (chiffré) |
+| `MISTRAL_API_KEY` | **Secret** | `AppData/NotoFlow/config/secrets.enc` (chiffré) |
+| `STRIPE_SECRET_KEY` | **Secret** | `AppData/NotoFlow/config/secrets.enc` (chiffré) |
+| `RESEND_API_KEY` | **Secret** | `AppData/NotoFlow/config/secrets.enc` (chiffré) |
+
+### Chiffrement
+
+Les secrets utilisent `safeStorage` d'Electron qui délègue au **keychain OS** :
+- Windows : DPAPI (Data Protection API) — lié au compte Windows
+- macOS : Keychain
+- Linux : libsecret / kwallet
+
+Le fichier `secrets.enc` est illisible sans le compte OS de l'utilisateur.
+
+### Premier lancement (production)
+
+Si aucune config n'est trouvée, l'app :
+1. Affiche un dialogue d'erreur avec le chemin du dossier de config
+2. Crée un fichier `.env.local` exemple dans `AppData/NotoFlow/config/`
+3. Ouvre ce dossier dans l'explorateur
+
+L'utilisateur remplit le `.env.local`, relance l'app — les secrets sont importés, chiffrés, puis le `.env.local` peut être supprimé.
+
+### En développement
+
+Le `.env.local` à la racine du monorepo est automatiquement importé et chiffré au démarrage. Il n'est jamais copié dans le build.
+
+
 
 - **Titlebar custom** (Windows/Linux) avec contrôles Minimize/Maximize/Close
 - **Traffic lights natifs** sur macOS (`titleBarStyle: hiddenInset`)
