@@ -50,59 +50,76 @@ function step(n, total, label) {
 // Fonctionne sur Windows, macOS et Linux sans outil externe.
 // Disponible depuis Node.js 16.7 (LTS depuis Node 18).
 
-// ─── Recherche d'un package dans l'arbre .pnpm ───────────────────────────────
+// ─── Hoisting complet depuis .pnpm vers apps/web/node_modules/ ───────────────
 //
-// pnpm stocke les packages sous :
-//   node_modules/.pnpm/<name>@<version>/node_modules/<name>/
+// Problème : pnpm standalone monorepo ne hoisste pas les packages dans
+// apps/web/node_modules/. Next.js (require-hook.js) résout ses dépendances
+// depuis son propre contexte (apps/web/node_modules/), pas depuis la racine.
 //
-// Cette fonction trouve le premier dossier correspondant au nom donné.
+// Solution : copier TOUS les packages de .pnpm/*/node_modules/ vers
+// apps/web/node_modules/ en une seule passe. Les packages déjà présents
+// (next, react, etc.) sont ignorés. Les packages scopés (@swc/helpers, etc.)
+// sont gérés via leur structure de dossier (@scope/name).
+//
+// C'est équivalent à ce que npm/yarn font nativement avec un node_modules plat.
 
-function findInPnpm(pnpmDir, pkgName) {
-  if (!fs.existsSync(pnpmDir)) return null;
-  // Chercher dans .pnpm/<pkg>@*/node_modules/<pkg>/
-  const entries = fs.readdirSync(pnpmDir);
-  const prefix  = pkgName.replace("/", "+") + "@"; // ex: styled-jsx@ ou @scope+pkg@
-  for (const entry of entries) {
-    if (!entry.startsWith(prefix)) continue;
-    const candidate = path.join(pnpmDir, entry, "node_modules", pkgName);
-    if (fs.existsSync(candidate)) return candidate;
+function hoistAllPnpmPackages(flatDir) {
+  const webNodeModules = path.join(flatDir, "apps", "web", "node_modules");
+  const pnpmDir        = path.join(flatDir, "node_modules", ".pnpm");
+
+  if (!fs.existsSync(pnpmDir)) {
+    console.warn("  AVERTISSEMENT : .pnpm introuvable — hoisting ignoré");
+    return;
   }
-  // Chercher aussi dans .pnpm/node_modules/ (hoisted)
-  const hoisted = path.join(pnpmDir, "node_modules", pkgName);
-  if (fs.existsSync(hoisted)) return hoisted;
-  return null;
-}
 
-// ─── Packages que Next.js resout depuis apps/web/node_modules/ ───────────────
-//
-// next/dist/server/require-hook.js appelle resolve('styled-jsx/package.json')
-// depuis son propre contexte, donc depuis apps/web/node_modules/.
-// Avec pnpm monorepo standalone, ces packages sont dans .pnpm/ a la racine
-// et ne sont PAS hoistes dans apps/web/node_modules/.
-// On les copie explicitement pour garantir la resolution.
+  let hoisted = 0;
+  let skipped = 0;
 
-const HOIST_TO_WEB_NODE_MODULES = [
-  "styled-jsx",
-];
+  const pnpmEntries = fs.readdirSync(pnpmDir);
 
-function hoistMissingPackages(flatDir) {
-  const webNodeModules  = path.join(flatDir, "apps", "web", "node_modules");
-  const rootPnpm        = path.join(flatDir, "node_modules", ".pnpm");
+  for (const entry of pnpmEntries) {
+    // Ignorer les dossiers spéciaux (.modules.yaml, node_modules hoisted, etc.)
+    if (entry.startsWith(".")) continue;
 
-  for (const pkg of HOIST_TO_WEB_NODE_MODULES) {
-    const dest = path.join(webNodeModules, pkg);
-    if (fs.existsSync(dest)) {
-      console.log(`  OK ${pkg} deja present dans apps/web/node_modules/`);
-      continue;
+    const pkgNodeModules = path.join(pnpmDir, entry, "node_modules");
+    if (!fs.existsSync(pkgNodeModules)) continue;
+
+    // Parcourir tous les packages dans ce node_modules
+    const pkgEntries = fs.readdirSync(pkgNodeModules);
+
+    for (const pkgEntry of pkgEntries) {
+      // Ignorer .bin et autres dossiers spéciaux
+      if (pkgEntry.startsWith(".")) continue;
+
+      if (pkgEntry.startsWith("@")) {
+        // Package scopé : @scope/name → deux niveaux
+        const scopeDir = path.join(pkgNodeModules, pkgEntry);
+        if (!fs.statSync(scopeDir).isDirectory()) continue;
+
+        const scopedPkgs = fs.readdirSync(scopeDir);
+        for (const scopedPkg of scopedPkgs) {
+          if (scopedPkg.startsWith(".")) continue;
+          const src  = path.join(scopeDir, scopedPkg);
+          const dest = path.join(webNodeModules, pkgEntry, scopedPkg);
+          if (fs.existsSync(dest)) { skipped++; continue; }
+          // Créer le dossier scope si nécessaire
+          const scopeDest = path.join(webNodeModules, pkgEntry);
+          if (!fs.existsSync(scopeDest)) fs.mkdirSync(scopeDest, { recursive: true });
+          fs.cpSync(src, dest, { recursive: true, dereference: true });
+          hoisted++;
+        }
+      } else {
+        // Package normal
+        const src  = path.join(pkgNodeModules, pkgEntry);
+        const dest = path.join(webNodeModules, pkgEntry);
+        if (fs.existsSync(dest)) { skipped++; continue; }
+        fs.cpSync(src, dest, { recursive: true, dereference: true });
+        hoisted++;
+      }
     }
-    const src = findInPnpm(rootPnpm, pkg);
-    if (!src) {
-      console.warn(`  AVERTISSEMENT : ${pkg} introuvable dans .pnpm — build peut-etre incomplet`);
-      continue;
-    }
-    console.log(`  Hoist ${pkg} : ${path.relative(flatDir, src)} -> apps/web/node_modules/${pkg}`);
-    fs.cpSync(src, dest, { recursive: true, dereference: true });
   }
+
+  console.log(`  Hoisting complet : ${hoisted} packages copiés, ${skipped} déjà présents`);
 }
 
 function flattenStandalone() {
@@ -144,10 +161,10 @@ function flattenStandalone() {
     fs.cpSync(publicSrc, publicDest, { recursive: true, dereference: true });
   }
 
-  // Hoisser les packages manquants dans apps/web/node_modules/
-  // (packages que Next.js resout depuis son propre contexte, pas depuis la racine)
-  console.log(`  Hoisting des packages manquants dans apps/web/node_modules/...`);
-  hoistMissingPackages(FLAT_DIR);
+  // Hoisser TOUS les packages .pnpm dans apps/web/node_modules/
+  // (Next.js résout ses dépendances depuis ce contexte, pas depuis la racine)
+  console.log(`  Hoisting de tous les packages .pnpm vers apps/web/node_modules/...`);
+  hoistAllPnpmPackages(FLAT_DIR);
 
   console.log(`  Standalone aplati dans : ${FLAT_DIR}`);
 }

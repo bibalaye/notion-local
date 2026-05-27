@@ -9,6 +9,9 @@ dist
 build
 *.tsbuildinfo
 .turbo
+.kiro
+.gemini
+.agents
 
 # Environment files
 .env

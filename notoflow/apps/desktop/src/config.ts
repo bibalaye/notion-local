@@ -40,12 +40,45 @@ export interface SecretConfig {
 
 export type AppConfig = PublicConfig & SecretConfig;
 
+// ─── Mapping des clés env → public / secret ──────────────────────────────────
+
+const PUBLIC_KEYS: (keyof PublicConfig)[] = [
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+  "NEXT_PUBLIC_APP_URL",
+];
+
+const SECRET_KEYS: (keyof SecretConfig)[] = [
+  "DATABASE_URL",
+  "MISTRAL_API_KEY",
+  "STRIPE_SECRET_KEY",
+  "STRIPE_WEBHOOK_SECRET",
+  "RESEND_API_KEY",
+  "RESEND_FROM_EMAIL",
+];
+
+function splitEnvRecord(parsed: Record<string, string>): {
+  pub: Partial<PublicConfig>;
+  sec: Partial<SecretConfig>;
+} {
+  const pub: Partial<PublicConfig> = {};
+  const sec: Partial<SecretConfig> = {};
+
+  for (const key of PUBLIC_KEYS) {
+    if (parsed[key]) (pub as Record<string, string>)[key] = parsed[key];
+  }
+  for (const key of SECRET_KEYS) {
+    if (parsed[key]) (sec as Record<string, string>)[key] = parsed[key];
+  }
+
+  return { pub, sec };
+}
+
 // ─── Clé de dérivation (doit correspondre à build-prod.js) ───────────────────
 // Cette constante est dans le code compilé (asar). Elle protège contre
 // une extraction naïve du fichier env.enc, pas contre un attaquant déterminé.
 const BUNDLE_KEY_MATERIAL = "notoflow-desktop-v1-com.notoflow.desktop";
 
-// ─── Chemins ──────────────────────────────────────────────────────────────────
 
 function getConfigDir(): string {
   return path.join(app.getPath("userData"), "config");
@@ -173,31 +206,17 @@ function initFromBundledEnv(): boolean {
   if (!parsed) return false;
 
   console.log("[Config] Initialisation depuis env.enc bundlé");
-
-  const pub: Partial<PublicConfig> = {};
-  const sec: Partial<SecretConfig> = {};
-
-  if (parsed.NEXT_PUBLIC_SUPABASE_URL)    pub.NEXT_PUBLIC_SUPABASE_URL    = parsed.NEXT_PUBLIC_SUPABASE_URL;
-  if (parsed.NEXT_PUBLIC_SUPABASE_ANON_KEY) pub.NEXT_PUBLIC_SUPABASE_ANON_KEY = parsed.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (parsed.NEXT_PUBLIC_APP_URL)         pub.NEXT_PUBLIC_APP_URL         = parsed.NEXT_PUBLIC_APP_URL;
-  if (parsed.DATABASE_URL)                sec.DATABASE_URL                = parsed.DATABASE_URL;
-  if (parsed.MISTRAL_API_KEY)             sec.MISTRAL_API_KEY             = parsed.MISTRAL_API_KEY;
-  if (parsed.STRIPE_SECRET_KEY)           sec.STRIPE_SECRET_KEY           = parsed.STRIPE_SECRET_KEY;
-  if (parsed.STRIPE_WEBHOOK_SECRET)       sec.STRIPE_WEBHOOK_SECRET       = parsed.STRIPE_WEBHOOK_SECRET;
-  if (parsed.RESEND_API_KEY)              sec.RESEND_API_KEY              = parsed.RESEND_API_KEY;
-  if (parsed.RESEND_FROM_EMAIL)           sec.RESEND_FROM_EMAIL           = parsed.RESEND_FROM_EMAIL;
-
+  const { pub, sec } = splitEnvRecord(parsed);
   if (Object.keys(pub).length > 0) writePublicConfig(pub);
   if (Object.keys(sec).length > 0) writeSecrets(sec);
 
   // Supprimer env.enc après import réussi
   // Note : en production le fichier est dans resources/ (read-only sur certains OS)
-  // On ne force pas la suppression — ce n'est pas critique car il est chiffré
   try {
     fs.unlinkSync(encPath);
     console.log("[Config] env.enc supprimé après import");
   } catch {
-    // Silencieux — le fichier est chiffré, pas critique
+    // Silencieux — le fichier est chiffré, pas critique s'il reste
   }
 
   return true;
@@ -209,23 +228,9 @@ export function importFromEnvFile(envFilePath: string): boolean {
   if (!fs.existsSync(envFilePath)) return false;
   try {
     const parsed = parseEnvContent(fs.readFileSync(envFilePath, "utf-8"));
-
-    const pub: Partial<PublicConfig> = {};
-    const sec: Partial<SecretConfig> = {};
-
-    if (parsed.NEXT_PUBLIC_SUPABASE_URL)    pub.NEXT_PUBLIC_SUPABASE_URL    = parsed.NEXT_PUBLIC_SUPABASE_URL;
-    if (parsed.NEXT_PUBLIC_SUPABASE_ANON_KEY) pub.NEXT_PUBLIC_SUPABASE_ANON_KEY = parsed.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (parsed.NEXT_PUBLIC_APP_URL)         pub.NEXT_PUBLIC_APP_URL         = parsed.NEXT_PUBLIC_APP_URL;
-    if (parsed.DATABASE_URL)                sec.DATABASE_URL                = parsed.DATABASE_URL;
-    if (parsed.MISTRAL_API_KEY)             sec.MISTRAL_API_KEY             = parsed.MISTRAL_API_KEY;
-    if (parsed.STRIPE_SECRET_KEY)           sec.STRIPE_SECRET_KEY           = parsed.STRIPE_SECRET_KEY;
-    if (parsed.STRIPE_WEBHOOK_SECRET)       sec.STRIPE_WEBHOOK_SECRET       = parsed.STRIPE_WEBHOOK_SECRET;
-    if (parsed.RESEND_API_KEY)              sec.RESEND_API_KEY              = parsed.RESEND_API_KEY;
-    if (parsed.RESEND_FROM_EMAIL)           sec.RESEND_FROM_EMAIL           = parsed.RESEND_FROM_EMAIL;
-
+    const { pub, sec } = splitEnvRecord(parsed);
     if (Object.keys(pub).length > 0) writePublicConfig(pub);
     if (Object.keys(sec).length > 0) writeSecrets(sec);
-
     console.log("[Config] Import .env.local réussi");
     return true;
   } catch (err) {
