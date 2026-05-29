@@ -444,6 +444,27 @@
   animation: fade-in 0.12s ease forwards;
 }
 
+/* ── Document chip node ──────────────────────────────────────────── */
+.notion-editor .doc-chip-node,
+.ProseMirror .doc-chip-node {
+  cursor: pointer !important;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  user-select: none;
+}
+
+.notion-editor .doc-chip-node:hover,
+.ProseMirror .doc-chip-node:hover {
+  cursor: pointer !important;
+}
+
+/* Wrapper NodeView inline */
+.notion-editor [data-node-view-wrapper],
+.ProseMirror [data-node-view-wrapper] {
+  display: inline;
+}
+
 /* ── Table controls (Notion-style hover controls) ──────────────── */
 .ProseMirror table {
   position: relative;

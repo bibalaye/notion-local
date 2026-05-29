@@ -37,11 +37,15 @@ import {
   Database,
   SlidersHorizontal,
   Type,
+  Paperclip,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { DocumentPickerPopover } from "./DocumentPickerPopover";
+import { DocumentViewerModal, type DocRef } from "./DocumentViewerModal";
+import { buildDocumentChipNode } from "./InlineDocumentChip";
 
 const EMOJIS = ["📄", "✍️", "🚀", "💡", "📅", "📊", "🎯", "🌟", "🔥", "💻", "🎨", "📝", "📚", "🏠", "🧠", "🛠️", "📣", "👥", "🏆", "🍕", "🏖️", "✈️"];
 
@@ -155,6 +159,15 @@ export function PageEditorClient({ page, currentUser, userRole }: PageEditorClie
   const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
   const [generatorInputs, setGeneratorInputs] = useState<Record<string, string>>({});
   const [selectedLanguage, setSelectedLanguage] = useState("anglais");
+
+  // ── Document picker & viewer ──────────────────────────────────────────────
+  const [docPickerOpen, setDocPickerOpen] = useState(false);
+  const [docPickerAnchor, setDocPickerAnchor] = useState<DOMRect | null>(null);
+  const [docPickerQuery, setDocPickerQuery] = useState("");
+  const [viewerDoc, setViewerDoc] = useState<DocRef | null>(null);
+  const attachBtnRef = useRef<HTMLButtonElement>(null);
+  // Callback pour annuler la mention @ (ferme le picker sans insérer)
+  const mentionCancelRef = useRef<(() => void) | null>(null);
 
   // Random cursor color
   const colorRef = useRef(CURSOR_COLORS[Math.floor(Math.random() * CURSOR_COLORS.length)]);
@@ -373,6 +386,103 @@ export function PageEditorClient({ page, currentUser, userRole }: PageEditorClie
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
       if (savedStatusTimeoutRef.current) clearTimeout(savedStatusTimeoutRef.current);
     };
+  }, []);
+
+  // ── Handlers document picker ──────────────────────────────────────────────
+
+  /** Ouvre le picker ancré sur le bouton toolbar */
+  const handleOpenDocPicker = () => {
+    if (isReadOnly) return;
+    const rect = attachBtnRef.current?.getBoundingClientRect() ?? null;
+    setDocPickerAnchor(rect);
+    setDocPickerQuery("");
+    setDocPickerOpen(true);
+  };
+
+  /**
+   * Appelé par l'extension DocumentMention quand l'utilisateur tape "@".
+   * Ouvre le picker ancré sur le curseur avec la query courante.
+   */
+  const handleMentionQuery = useCallback(
+    (params: {
+      query: string;
+      coords: { top: number; left: number; bottom: number; right: number };
+      cancel: () => void;
+    }) => {
+      if (isReadOnly) return;
+      mentionCancelRef.current = params.cancel;
+      // Convertir les coordonnées absolues en DOMRect-like pour le picker
+      const rect = {
+        top: params.coords.top,
+        left: params.coords.left,
+        bottom: params.coords.bottom,
+        right: params.coords.right,
+        width: params.coords.right - params.coords.left,
+        height: params.coords.bottom - params.coords.top,
+        x: params.coords.left,
+        y: params.coords.top,
+        toJSON: () => ({}),
+      } as DOMRect;
+      setDocPickerAnchor(rect);
+      setDocPickerQuery(params.query);
+      setDocPickerOpen(true);
+    },
+    [isReadOnly],
+  );
+
+  /** Ferme le picker quand l'extension signale la fermeture */
+  const handleMentionClose = useCallback(() => {
+    setDocPickerOpen(false);
+    mentionCancelRef.current = null;
+  }, []);
+
+  /** Insère le chip dans l'éditeur et ferme le picker */
+  const handleDocSelect = useCallback(
+    (doc: DocRef) => {
+      if (!editorInstance) {
+        toast.error("Éditeur non prêt.");
+        return;
+      }
+
+      // Si le picker a été ouvert via @, supprimer le "@query" avant d'insérer le chip
+      if (mentionCancelRef.current) {
+        // Supprimer le "@" + la query tapée depuis le curseur
+        const { from } = editorInstance.state.selection;
+        const textBefore = editorInstance.state.doc.textBetween(
+          Math.max(0, from - 30),
+          from,
+          "\n",
+        );
+        const match = textBefore.match(/@(\w*)$/);
+        if (match) {
+          const deleteFrom = from - match[0].length;
+          editorInstance.chain().focus().deleteRange({ from: deleteFrom, to: from }).run();
+        }
+        mentionCancelRef.current = null;
+      }
+
+      const chipNode = buildDocumentChipNode(doc);
+      editorInstance.commands.insertContent(chipNode);
+      // Déclencher la sauvegarde
+      const json = editorInstance.getJSON();
+      debouncedSave({ content: JSON.stringify(json) }, 500);
+      setDocPickerOpen(false);
+      toast.success(`"${doc.name}" attaché au document.`);
+    },
+    [editorInstance, debouncedSave],
+  );
+
+  /**
+   * Écoute l'événement custom "open-document-viewer" dispatché par DocumentChipView
+   * (le NodeView React du chip) quand l'utilisateur clique sur un chip dans l'éditeur.
+   */
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<DocRef>).detail;
+      if (detail?.id) setViewerDoc(detail);
+    };
+    window.addEventListener("open-document-viewer", handler);
+    return () => window.removeEventListener("open-document-viewer", handler);
   }, []);
 
   // AI Prompt stream function
@@ -624,6 +734,21 @@ export function PageEditorClient({ page, currentUser, userRole }: PageEditorClie
             {isReadOnly && (
               <Button size="sm" variant="outline" className="h-8 text-xs" asChild>
                 <Link href={`/login?redirect=/app/page/${page.id}`}>Se connecter</Link>
+              </Button>
+            )}
+
+            {/* Bouton Attacher un document */}
+            {!isReadOnly && (
+              <Button
+                ref={attachBtnRef}
+                size="sm"
+                variant="outline"
+                onClick={handleOpenDocPicker}
+                className="h-8 gap-1.5 text-xs border-indigo-500/30 bg-indigo-500/5 hover:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold"
+                title="Attacher un document (@)"
+              >
+                <Paperclip className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Document</span>
               </Button>
             )}
 
@@ -1085,6 +1210,8 @@ export function PageEditorClient({ page, currentUser, userRole }: PageEditorClie
                 setIsAiOpen(true);
               }
             }}
+            onDocumentMentionQuery={handleMentionQuery}
+            onDocumentMentionClose={handleMentionClose}
           />
         </div>
       </div>
@@ -1668,6 +1795,30 @@ export function PageEditorClient({ page, currentUser, userRole }: PageEditorClie
               )}
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Document Picker Popover (@ mention ou bouton toolbar) ─────────── */}
+      <AnimatePresence>
+        {docPickerOpen && (
+          <DocumentPickerPopover
+            workspaceId={page.workspaceId}
+            anchorRect={docPickerAnchor}
+            initialQuery={docPickerQuery}
+            onSelect={handleDocSelect}
+            onClose={() => {
+              setDocPickerOpen(false);
+              mentionCancelRef.current?.();
+              mentionCancelRef.current = null;
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Document Viewer Modal (clic sur un chip dans l'éditeur) ──────── */}
+      <AnimatePresence>
+        {viewerDoc && (
+          <DocumentViewerModal doc={viewerDoc} onClose={() => setViewerDoc(null)} />
         )}
       </AnimatePresence>
     </div>

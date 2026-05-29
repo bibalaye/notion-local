@@ -16,8 +16,13 @@ import { Color } from "@tiptap/extension-color";
 import CalloutBlockNode from "./CalloutBlockNode";
 import DatabaseBlockNode from "./DatabaseBlockNode";
 import { CustomTableCell } from "./CustomTableCell";
+import { DocumentMentionExtension, type DocumentMentionOptions } from "./DocumentMentionExtension";
+import DocumentChipNode from "./DocumentChipNode";
 
-export const getExtensions = (options?: { renderDatabase?: (id: string) => React.ReactNode }) => {
+export const getExtensions = (options?: {
+  renderDatabase?: (id: string) => React.ReactNode;
+  documentMention?: DocumentMentionOptions;
+}) => {
   const extensions = [
     StarterKit.configure({
       heading: { levels: [1, 2, 3, 4, 5, 6] },
@@ -51,6 +56,12 @@ export const getExtensions = (options?: { renderDatabase?: (id: string) => React
     DatabaseBlockNode ? DatabaseBlockNode.configure({
       renderDatabase: options?.renderDatabase,
     }) : undefined,
+    // Node chip document (inline, cliquable, avec viewer)
+    DocumentChipNode,
+    // Extension mention de document (@)
+    options?.documentMention
+      ? DocumentMentionExtension.configure(options.documentMention)
+      : undefined,
   ];
 
   extensions.forEach((ext, i) => {

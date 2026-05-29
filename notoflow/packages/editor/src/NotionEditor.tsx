@@ -86,6 +86,17 @@ export type NotionEditorProps = {
   collaborativeCursors?: { id: string; name: string; color: string; pos: number }[];
   onTriggerAI?: (editorInstance: any) => void;
   onEditorReady?: (editorInstance: any) => void;
+  /**
+   * Appelé quand l'utilisateur tape "@" dans l'éditeur.
+   * Reçoit la query (texte après @), les coordonnées du curseur et un callback cancel.
+   */
+  onDocumentMentionQuery?: (params: {
+    query: string;
+    coords: { top: number; left: number; bottom: number; right: number };
+    cancel: () => void;
+  }) => void;
+  /** Appelé quand le menu @ doit être fermé */
+  onDocumentMentionClose?: () => void;
 };
 
 export function NotionEditor({
@@ -97,6 +108,8 @@ export function NotionEditor({
   collaborativeCursors = [],
   onTriggerAI,
   onEditorReady,
+  onDocumentMentionQuery,
+  onDocumentMentionClose,
 }: NotionEditorProps) {
   // Slash menu state
   const [showMenu, setShowMenu] = useState(false);
@@ -264,7 +277,15 @@ export function NotionEditor({
   const editor = useEditor({
     immediatelyRender: false,
     shouldRerenderOnTransaction: false, // Réduit les re-renders React inutiles
-    extensions: getExtensions({ renderDatabase }),
+    extensions: getExtensions({
+      renderDatabase,
+      documentMention: !readOnly && (onDocumentMentionQuery || onDocumentMentionClose)
+        ? {
+            onMentionQuery: onDocumentMentionQuery,
+            onMentionClose: onDocumentMentionClose,
+          }
+        : undefined,
+    }),
     content: normalizeEditorContent(initialContent) ?? { type: "doc", content: [{ type: "paragraph" }] },
     editable: !readOnly,
     editorProps: {
