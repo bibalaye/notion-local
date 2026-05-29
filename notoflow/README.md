@@ -46,6 +46,13 @@ graph TD
 * Tri sur plusieurs attributs, filtres avancés et champs calculés automatiques.
 * Édition en ligne (inline editing) des cellules (textes, statuts, dates, cases à cocher).
 
+### 📁 Système de Documents
+* **Upload drag & drop** de fichiers (PDF, Word, Excel, PowerPoint, images, texte).
+* **Visualisation inline** : PDF natif, Word/Excel/PowerPoint via Google Docs Viewer, images natives.
+* **Tagging avancé** : organisation par tags multiples, filtres dynamiques, suggestions intelligentes.
+* **Stockage Supabase** : fichiers hébergés dans un bucket public avec politiques RLS sécurisées.
+* **Permissions granulaires** : upload (EDITOR+), suppression (OWNER/ADMIN + propriétaire).
+
 ### 🤖 Assistant IA Rédacteur (Streaming)
 * Génération de texte en continu (Server-Sent Events) via Mistral (mistral-large).
 * Actions rapides prédéfinies :
@@ -75,6 +82,7 @@ Voici les principaux modèles définis dans le schéma PostgreSQL (`packages/dat
 * **`Page`** : Document principal de l'éditeur. Peut être imbriqué (`parentId`) et partagé publiquement (`isPublic`).
 * **`Database`** : Conteneur de métadonnées de schémas (colonnes définies au format JSON) et de configurations de vues.
 * **`DatabaseRow`** : Contient les valeurs concrètes de chaque ligne au format JSON (`values`).
+* **`Document`** : Métadonnées des fichiers uploadés (nom, type, taille, URL Supabase Storage, tags).
 * **`Favorite`** : Permet aux utilisateurs d'épingler leurs documents préférés.
 
 ---

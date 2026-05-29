@@ -39,6 +39,7 @@ model User {
   favorites         Favorite[]
   mentions          Mention[]           @relation("MentionedUser")
   apiKeys           ApiKey[]
+  documents         Document[]
 
   @@index([email])
 }
@@ -90,6 +91,7 @@ model Workspace {
   pages           Page[]
   databases       Database[]
   invites         Invite[]
+  documents       Document[]
   billingCustomer String?
   billingSub      String?
   apiKeys         ApiKey[]
@@ -351,6 +353,32 @@ model AuditLog {
 
   @@index([workspaceId, createdAt])
   @@index([entityType, entityId])
+}
+
+// ============================================================================
+// DOCUMENTS (visualisateur + tags)
+// ============================================================================
+
+model Document {
+  id          String   @id @default(cuid())
+  workspaceId String
+  uploaderId  String
+  name        String
+  fileType    String   // "pdf" | "docx" | "xlsx" | "pptx" | "image" | "other"
+  mimeType    String
+  size        Int      // bytes
+  storageKey  String   // chemin dans Supabase Storage (bucket: documents)
+  publicUrl   String   // URL publique signée ou permanente
+  tags        String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  uploader  User      @relation(fields: [uploaderId], references: [id])
+
+  @@index([workspaceId])
+  @@index([uploaderId])
+  @@index([fileType])
 }
 
 // ============================================================================

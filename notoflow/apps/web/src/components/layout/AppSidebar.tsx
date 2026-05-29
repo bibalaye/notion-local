@@ -12,6 +12,7 @@ import {
   Star,
   Trash2,
   Sparkles,
+  FolderOpen,
 } from "lucide-react";
 import {
   Sidebar,
@@ -113,6 +114,15 @@ export function AppSidebar() {
                   <TransitionLink href="/app/databases" className="flex min-w-0 items-center gap-2 text-xs font-semibold text-foreground/80 [&>span:last-child]:min-w-0 [&>span:last-child]:flex-1 [&>span:last-child]:truncate">
                     <Database className="h-3.5 w-3.5 shrink-0 stroke-[1.8]" />
                     <span>Bases de données</span>
+                  </TransitionLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className="rounded-md hover:bg-accent/60 px-2.5 py-1.5 transition-colors duration-100">
+                  <TransitionLink href="/app/documents" className="flex min-w-0 items-center gap-2 text-xs font-semibold text-foreground/80 [&>span:last-child]:min-w-0 [&>span:last-child]:flex-1 [&>span:last-child]:truncate">
+                    <FolderOpen className="h-3.5 w-3.5 shrink-0 stroke-[1.8]" />
+                    <span>Documents</span>
                   </TransitionLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
