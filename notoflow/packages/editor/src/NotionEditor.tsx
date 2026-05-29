@@ -17,6 +17,10 @@ import {
   Trash,
   Plus,
   GripVertical,
+  Link as LinkIcon,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
 } from "lucide-react";
 import "./styles.css";
 
@@ -123,7 +127,8 @@ export function NotionEditor({
   >({});
 
   // Floating selection bubble menu states
-  const [bubbleSubmenu, setBubbleSubmenu] = useState<"none" | "block" | "color">("none");
+  const [bubbleSubmenu, setBubbleSubmenu] = useState<"none" | "block" | "color" | "link">("none");
+  const [linkUrl, setLinkUrl] = useState("");
   const [hoveredBlock, setHoveredBlock] = useState<HoveredBlock | null>(null);
   const [isDraggingBlock, setIsDraggingBlock] = useState(false);
 
@@ -151,48 +156,64 @@ export function NotionEditor({
       title: "Texte",
       description: "Écrire du texte simple",
       emoji: "✍️",
+      category: "Rédiger & Texte",
+      shortcut: "Alt+0",
       action: (editor: any) => editor.chain().focus().setParagraph().run(),
     },
     {
       title: "Titre 1",
       description: "Grand titre de section",
       emoji: "❶",
+      category: "Rédiger & Texte",
+      shortcut: "Alt+1",
       action: (editor: any) => editor.chain().focus().toggleHeading({ level: 1 }).run(),
     },
     {
       title: "Titre 2",
       description: "Titre moyen de section",
       emoji: "❷",
+      category: "Rédiger & Texte",
+      shortcut: "Alt+2",
       action: (editor: any) => editor.chain().focus().toggleHeading({ level: 2 }).run(),
     },
     {
       title: "Titre 3",
       description: "Petit titre de section",
       emoji: "❸",
+      category: "Rédiger & Texte",
+      shortcut: "Alt+3",
       action: (editor: any) => editor.chain().focus().toggleHeading({ level: 3 }).run(),
     },
     {
       title: "Liste de tâches",
       description: "Checklist interactive",
       emoji: "☑️",
+      category: "Rédiger & Texte",
+      shortcut: "Alt+4",
       action: (editor: any) => editor.chain().focus().toggleTaskList().run(),
     },
     {
       title: "Citation",
       description: "Insérer un bloc de citation",
       emoji: "💬",
+      category: "Rédiger & Texte",
+      shortcut: "Alt+5",
       action: (editor: any) => editor.chain().focus().toggleBlockquote().run(),
     },
     {
       title: "Bloc de code",
       description: "Écrire du code informatique",
       emoji: "💻",
+      category: "Rédiger & Texte",
+      shortcut: "Alt+6",
       action: (editor: any) => editor.chain().focus().toggleCodeBlock().run(),
     },
     {
       title: "Encadre",
       description: "Bloc visuel avec icone et couleur",
       emoji: "[]",
+      category: "Rédiger & Texte",
+      shortcut: "Alt+7",
       action: (editor: any) =>
         editor
           .chain()
@@ -208,12 +229,16 @@ export function NotionEditor({
       title: "Séparateur",
       description: "Ligne de séparation horizontale",
       emoji: "➖",
+      category: "Mises en page & Tableaux",
+      shortcut: "Alt+-",
       action: (editor: any) => editor.chain().focus().setHorizontalRule().run(),
     },
     {
       title: "Tableau",
       description: "Insérer un tableau simple",
       emoji: "📅",
+      category: "Mises en page & Tableaux",
+      shortcut: "Alt+T",
       action: (editor: any) =>
         editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
     },
@@ -221,6 +246,8 @@ export function NotionEditor({
       title: "Vidéo Youtube",
       description: "Insérer une vidéo Youtube",
       emoji: "🎥",
+      category: "Mises en page & Tableaux",
+      shortcut: "Alt+Y",
       action: (editor: any) => {
         const url = prompt("URL de la vidéo Youtube :");
         if (url) {
@@ -232,6 +259,8 @@ export function NotionEditor({
       title: "Base de données",
       description: "Insérer une base de données interactive",
       emoji: "📊",
+      category: "Bases de données & IA",
+      shortcut: "Alt+D",
       action: (editor: any) => {
         const dbId = `db-${Date.now().toString().slice(-6)}`;
         editor.chain().focus().insertContent({
@@ -244,6 +273,8 @@ export function NotionEditor({
       title: "Assistant IA",
       description: "Générer du texte avec l'IA",
       emoji: "✨",
+      category: "Bases de données & IA",
+      shortcut: "Alt+I",
       action: (editorInstance: any) => {
         if (onTriggerAI) {
           onTriggerAI(editorInstance);
@@ -426,7 +457,12 @@ export function NotionEditor({
     (clientX: number, clientY: number): HoveredBlock | null => {
       if (!editor || readOnly || !containerRef.current) return null;
 
-      const result = editor.view.posAtCoords({ left: clientX, top: clientY });
+      let result;
+      try {
+        result = editor.view.posAtCoords({ left: clientX, top: clientY });
+      } catch (e) {
+        return null;
+      }
       if (!result) return null;
 
       const resolvedPos = editor.state.doc.resolve(result.pos);
@@ -442,7 +478,13 @@ export function NotionEditor({
       const blockNode = editor.state.doc.nodeAt(blockPos);
       if (!blockNode || blockNode.type.name === "doc") return null;
 
-      const coords = editor.view.coordsAtPos(Math.min(blockPos + 1, editor.state.doc.content.size));
+      let coords;
+      try {
+        coords = editor.view.coordsAtPos(Math.min(blockPos + 1, editor.state.doc.content.size));
+      } catch (e) {
+        return null;
+      }
+
       const containerBox = containerRef.current.getBoundingClientRect();
       const domNode = editor.view.nodeDOM(blockPos) as HTMLElement | null;
       const domBox = domNode?.getBoundingClientRect();
@@ -451,7 +493,7 @@ export function NotionEditor({
         pos: blockPos,
         nodeSize: blockNode.nodeSize,
         top: (domBox?.top ?? coords.top) - containerBox.top,
-        height: Math.max(domBox?.height ?? coords.bottom - coords.top, 28),
+        height: Math.max(domBox?.height ?? (coords.bottom - coords.top), 28),
       };
     },
     [editor, readOnly],
@@ -658,6 +700,55 @@ export function NotionEditor({
               <Code className="h-3.5 w-3.5 stroke-[1.8]" />
             </button>
 
+            <button
+              type="button"
+              onClick={() => {
+                setLinkUrl(editor.getAttributes("link").href || "");
+                setBubbleSubmenu(bubbleSubmenu === "link" ? "none" : "link");
+              }}
+              className={`p-1 rounded hover:bg-accent transition-colors shrink-0 cursor-pointer focus:outline-none ${
+                editor.isActive("link") ? "bg-accent text-indigo-500 font-bold" : "text-foreground/70"
+              }`}
+              title="Lien hypertexte"
+            >
+              <LinkIcon className="h-3.5 w-3.5 stroke-[1.8]" />
+            </button>
+
+            <div className="h-3.5 w-[1px] bg-border/40 mx-0.5 shrink-0" />
+
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().setTextAlign("left").run()}
+              className={`p-1 rounded hover:bg-accent transition-colors shrink-0 cursor-pointer focus:outline-none ${
+                editor.isActive({ textAlign: "left" }) ? "bg-accent text-foreground font-bold" : "text-foreground/70"
+              }`}
+              title="Aligner à gauche"
+            >
+              <AlignLeft className="h-3.5 w-3.5 stroke-[1.8]" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().setTextAlign("center").run()}
+              className={`p-1 rounded hover:bg-accent transition-colors shrink-0 cursor-pointer focus:outline-none ${
+                editor.isActive({ textAlign: "center" }) ? "bg-accent text-foreground font-bold" : "text-foreground/70"
+              }`}
+              title="Aligner au centre"
+            >
+              <AlignCenter className="h-3.5 w-3.5 stroke-[1.8]" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().setTextAlign("right").run()}
+              className={`p-1 rounded hover:bg-accent transition-colors shrink-0 cursor-pointer focus:outline-none ${
+                editor.isActive({ textAlign: "right" }) ? "bg-accent text-foreground font-bold" : "text-foreground/70"
+              }`}
+              title="Aligner à droite"
+            >
+              <AlignRight className="h-3.5 w-3.5 stroke-[1.8]" />
+            </button>
+
             <div className="h-3.5 w-[1px] bg-border/40 mx-0.5 shrink-0" />
 
             {/* Color picker */}
@@ -795,6 +886,59 @@ export function NotionEditor({
               </div>
             </div>
           )}
+          {bubbleSubmenu === "link" && (
+            <div className="border-t border-border/30 mt-0.5 pt-1.5 pb-1 px-2.5 animate-fade-in w-full select-none">
+              <div className="text-[9px] font-extrabold text-muted-foreground/60 uppercase tracking-widest px-0.5 mb-1.5">
+                Lien hypertexte
+              </div>
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="text"
+                  placeholder="Coller ou saisir l'URL..."
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (linkUrl.trim()) {
+                        editor.chain().focus().setLink({ href: linkUrl }).run();
+                      } else {
+                        editor.chain().focus().unsetLink().run();
+                      }
+                      setBubbleSubmenu("none");
+                    }
+                  }}
+                  className="flex-1 bg-background text-xs px-2.5 py-1 rounded-md border border-border/60 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-foreground"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (linkUrl.trim()) {
+                      editor.chain().focus().setLink({ href: linkUrl }).run();
+                    } else {
+                      editor.chain().focus().unsetLink().run();
+                    }
+                    setBubbleSubmenu("none");
+                  }}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] px-2.5 py-1 rounded-md transition cursor-pointer"
+                >
+                  Valider
+                </button>
+                {editor.isActive("link") && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      editor.chain().focus().unsetLink().run();
+                      setBubbleSubmenu("none");
+                    }}
+                    className="bg-destructive/10 hover:bg-destructive/20 text-destructive font-bold text-[11px] px-2.5 py-1 rounded-md transition cursor-pointer"
+                  >
+                    Retirer
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </BubbleMenu>
       )}
 
@@ -873,38 +1017,56 @@ export function NotionEditor({
       {/* Command Slash Menu */}
       {showMenu && filteredItems.length > 0 && (
         <div
-          className="absolute z-50 w-72 rounded-xl border border-border bg-popover p-1 shadow-2xl backdrop-blur-md max-h-[300px] overflow-y-auto"
+          className="absolute z-50 w-72 rounded-xl border border-border bg-popover/90 p-1.5 shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl max-h-[300px] overflow-y-auto scrollbar-none"
           style={{ top: `${menuCoords.top}px`, left: `${menuCoords.left}px` }}
         >
-          <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2.5 py-2">
-            Commandes de blocs
-          </div>
-          <div className="space-y-0.5">
-            {filteredItems.map((item, idx) => (
-              <button
-                key={item.title}
-                onClick={() => runCommand(item.action)}
-                className={`w-full flex items-center gap-3 px-2.5 py-2 rounded-lg text-left transition-colors duration-150 ${
-                  idx === selectedIndex ? "bg-accent text-accent-foreground font-medium" : "hover:bg-accent/40 text-foreground"
-                }`}
-                type="button"
-              >
-                <span className="text-lg shrink-0 flex items-center justify-center h-8 w-8 rounded-lg bg-background border border-border/60 shadow-sm">
-                  {item.title === "Assistant IA" ? (
-                    <Sparkles className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                  ) : (
-                    item.emoji
-                  )}
-                </span>
-                <div className="min-w-0">
-                  <div className="text-sm font-medium leading-none truncate">{item.title}</div>
-                  <div className="text-[11px] text-muted-foreground mt-1 truncate leading-none">
-                    {item.description}
-                  </div>
+          {Array.from(new Set(filteredItems.map(item => item.category))).map((category) => {
+            const categoryItems = filteredItems.filter((item) => item.category === category);
+            return (
+              <div key={category} className="mb-2 last:mb-0">
+                <div className="text-[9px] font-extrabold text-muted-foreground/60 uppercase tracking-widest px-2.5 py-1 select-none">
+                  {category}
                 </div>
-              </button>
-            ))}
-          </div>
+                <div className="space-y-0.5">
+                  {categoryItems.map((item) => {
+                    const globalIdx = filteredItems.indexOf(item);
+                    const isSelected = globalIdx === selectedIndex;
+                    return (
+                      <button
+                        key={item.title}
+                        onClick={() => runCommand(item.action)}
+                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-all duration-100 cursor-pointer ${
+                          isSelected ? "bg-accent text-foreground font-semibold shadow-sm scale-[0.99]" : "hover:bg-accent/40 text-foreground/80"
+                        }`}
+                        type="button"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="text-base shrink-0 flex items-center justify-center h-7 w-7 rounded-md bg-background border border-border/60 shadow-sm">
+                            {item.title === "Assistant IA" ? (
+                              <Sparkles className="h-3.5 w-3.5 text-violet-500 animate-pulse" />
+                            ) : (
+                              item.emoji
+                            )}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="text-xs font-bold leading-none truncate">{item.title}</div>
+                            <div className="text-[10px] text-muted-foreground mt-1 truncate leading-none">
+                              {item.description}
+                            </div>
+                          </div>
+                        </div>
+                        {item.shortcut && (
+                          <span className="text-[9px] font-extrabold text-muted-foreground/40 bg-muted/65 px-1 rounded uppercase tracking-wider shrink-0 ml-2 border border-border/30">
+                            {item.shortcut}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

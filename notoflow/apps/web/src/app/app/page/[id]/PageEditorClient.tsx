@@ -59,11 +59,12 @@ const COVER_PRESETS = [
 ];
 
 const PAGE_BACKGROUNDS = [
-  { label: "Defaut", value: "default", className: "bg-background" },
-  { label: "Ivoire", value: "ivory", className: "bg-[#fbfaf7] dark:bg-[#1f1e1b]" },
-  { label: "Bleu", value: "blue", className: "bg-[#f4f8fb] dark:bg-[#18212b]" },
-  { label: "Vert", value: "green", className: "bg-[#f5f9f3] dark:bg-[#19251d]" },
-  { label: "Rose", value: "rose", className: "bg-[#fbf6f8] dark:bg-[#2a1d25]" },
+  { label: "Défaut", value: "default", className: "bg-background" },
+  { label: "Ivoire", value: "ivory", className: "bg-[#fbfaf7] dark:bg-[#1f1e1b] text-foreground" },
+  { label: "Sable Chaud", value: "sand", className: "bg-gradient-to-br from-[#fbf8f5] to-[#f2eae1] dark:from-[#1d1916] dark:to-[#2b241e] text-foreground" },
+  { label: "Bleu Nordique", value: "blue", className: "bg-gradient-to-br from-[#f4f7fb] to-[#e8f1f5] dark:from-[#141b24] dark:to-[#1a2332] text-foreground" },
+  { label: "Forêt Nordique", value: "green", className: "bg-gradient-to-br from-[#f2f7f2] to-[#e6efe5] dark:from-[#131d16] dark:to-[#1b2b1f] text-foreground" },
+  { label: "Aurore Crépuscule", value: "rose", className: "bg-gradient-to-br from-[#fcf5f8] to-[#f5e7ed] dark:from-[#21161d] dark:to-[#32202b] text-foreground" },
 ];
 
 const PAGE_WIDTHS = {
@@ -914,7 +915,7 @@ export function PageEditorClient({ page, currentUser, userRole }: PageEditorClie
                         <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                           Couleur de page
                         </div>
-                        <div className="grid grid-cols-5 gap-2">
+                        <div className="grid grid-cols-6 gap-2">
                           {PAGE_BACKGROUNDS.map((preset) => (
                             <button
                               key={preset.value}

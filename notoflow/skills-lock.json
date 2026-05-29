@@ -6,6 +6,12 @@
       "sourceType": "github",
       "skillPath": "skills/electron-skills/electron/SKILL.md",
       "computedHash": "ab90f92c4abdc6ff5f26cc387c13beca310986937ee51cecab02a89412181c79"
+    },
+    "tiptap-editor": {
+      "source": "xiaolai/vmark",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/tiptap-editor/SKILL.md",
+      "computedHash": "065ff4916bdd605cc049cd71be9439019e1f9e70d1f1610daf502031a7d2f2b0"
     }
   }
 }
