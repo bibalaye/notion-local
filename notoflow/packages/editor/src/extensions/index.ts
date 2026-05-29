@@ -34,8 +34,8 @@ export const getExtensions = (options?: {
     Highlight.configure({ multicolor: true }),
     TextAlign.configure({ types: ["heading", "paragraph"] }),
     Link.configure({
-      openOnClick: false,
-      HTMLAttributes: { class: "text-primary underline" },
+      openOnClick: true,
+      HTMLAttributes: { class: "text-primary underline cursor-pointer" },
     }),
     Image.configure({ HTMLAttributes: { class: "rounded-lg max-w-full" } }),
     Youtube.configure({ HTMLAttributes: { class: "rounded-lg" } }),
