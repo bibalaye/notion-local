@@ -1,10 +1,13 @@
+# Artefacts de build
 dist/
 release/
+
+# Dépendances
 node_modules/
+
+# Source maps (générées au build)
 *.js.map
-# Générés au build (ne jamais committer)
-config/
+
+# Ancienne logique serveur local — ne jamais committer
 bundled-node/
-standalone-flat/
-# Standalone Next.js aplati (généré au build)
 standalone-flat/

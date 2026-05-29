@@ -180,12 +180,15 @@ export function createMainWindow(appUrl: string): BrowserWindow {
   });
 
   // Ouvrir les liens externes dans le navigateur système, pas dans Electron
+  // Autoriser : localhost (dev) + vercel.app (prod) + domaines externes
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (!url.startsWith("http://localhost")) {
-      shell.openExternal(url);
-      return { action: "deny" };
+    const isLocal   = url.startsWith("http://localhost");
+    const isVercel  = url.startsWith("https://notion-local-one.vercel.app");
+    if (isLocal || isVercel) {
+      return { action: "allow" };
     }
-    return { action: "allow" };
+    shell.openExternal(url);
+    return { action: "deny" };
   });
 
   mainWindow.on("closed", () => {

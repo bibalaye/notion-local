@@ -3,9 +3,9 @@
  */
 
 import { Tray, Menu, shell, app, nativeImage } from "electron";
-import path from "node:path";
 import { log } from "./logger";
 import { getIconPath, showOrCreateMainWindow } from "./windows";
+import { PROD_URL } from "./config";
 
 let tray: Tray | null = null;
 
@@ -27,15 +27,12 @@ export function createTray(appUrl: string): void {
     },
     { type: "separator" },
     {
-      label: "Voir les logs",
-      click: () => shell.openPath(app.getPath("logs")),
+      label: "Ouvrir dans le navigateur",
+      click: () => shell.openExternal(PROD_URL),
     },
     {
-      label: "Configuration...",
-      click: () => {
-        const configDir = path.join(app.getPath("userData"), "config");
-        shell.openPath(configDir);
-      },
+      label: "Voir les logs",
+      click: () => shell.openPath(app.getPath("logs")),
     },
     { type: "separator" },
     { label: "Quitter", click: () => app.quit() },

@@ -2,15 +2,12 @@
   "name": "@notoflow/desktop",
   "version": "0.1.0",
   "private": true,
-  "description": "NotoFlow — Application desktop (Electron)",
+  "description": "NotoFlow — Application desktop Electron (charge notion-local-one.vercel.app)",
   "main": "dist/main.js",
   "scripts": {
-    "dev": "concurrently --kill-others \"pnpm dev:next\" \"pnpm dev:electron\"",
-    "dev:next": "pnpm --filter @notoflow/web dev",
-    "dev:electron": "wait-on http://localhost:3000 && tsc -p tsconfig.electron.json && electron .",
+    "dev": "wait-on http://localhost:3000 && tsc -p tsconfig.electron.json && electron .",
     "build": "node scripts/build-prod.js",
     "build:electron": "tsc -p tsconfig.electron.json",
-    "bundle:node": "node scripts/download-node.js",
     "dist": "electron-builder",
     "dist:win": "electron-builder --win",
     "dist:mac": "electron-builder --mac",
@@ -20,7 +17,6 @@
   },
   "devDependencies": {
     "@types/node": "^22.15.21",
-    "concurrently": "^9.1.2",
     "electron": "^35.3.0",
     "electron-builder": "^25.1.8",
     "typescript": "^5.8.3",
@@ -37,17 +33,6 @@
     "files": [
       "dist/**/*",
       "package.json"
-    ],
-    "extraResources": [
-      {
-        "from": "standalone-flat",
-        "to": "app",
-        "filter": ["**/*"]
-      },
-      {
-        "from": "bundled-node/node.exe",
-        "to": "node.exe"
-      }
     ],
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64"] }],
