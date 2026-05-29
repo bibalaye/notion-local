@@ -40,6 +40,20 @@ const TABLE_COLORS = [
   { label: "Rose", value: "pink", cssColor: "#fce7f3" },
 ];
 
+/* ─── Palette de couleurs des bordures ───────────────────────────── */
+const BORDER_COLORS = [
+  { label: "Défaut", value: "default", cssColor: "" },
+  { label: "Gris sombre", value: "gray", cssColor: "#6b7280" },
+  { label: "Bleu", value: "blue", cssColor: "#3b82f6" },
+  { label: "Vert", value: "green", cssColor: "#10b981" },
+  { label: "Jaune", value: "yellow", cssColor: "#f59e0b" },
+  { label: "Orange", value: "orange", cssColor: "#f97316" },
+  { label: "Rouge", value: "red", cssColor: "#ef4444" },
+  { label: "Violet", value: "purple", cssColor: "#8b5cf6" },
+  { label: "Rose", value: "pink", cssColor: "#ec4899" },
+  { label: "Marron", value: "brown", cssColor: "#78350f" },
+];
+
 /* ─── Types internes ────────────────────────────────────────────── */
 interface ColumnRect {
   left: number;
@@ -268,6 +282,96 @@ export function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
       editor.off("update", refresh);
     };
   }, [editor, hoveredTable, computeTableGeometry]);
+
+  // Trouver le nœud ProseMirror correspondant au tableau survolé et sa position de départ
+  const findTableNode = useCallback(() => {
+    if (!hoveredTable) return null;
+    try {
+      const firstCell = hoveredTable.querySelector("td, th");
+      if (!firstCell) return null;
+      const pos = editor.view.posAtDOM(firstCell, 0);
+      const $pos = editor.state.doc.resolve(pos);
+      let depth = $pos.depth;
+      while (depth > 0) {
+        if ($pos.node(depth).type.name === "table") {
+          return { node: $pos.node(depth), pos: $pos.before(depth) };
+        }
+        depth--;
+      }
+      return null;
+    } catch (e) {
+      console.error("Erreur lors de la recherche du nœud table:", e);
+      return null;
+    }
+  }, [editor, hoveredTable]);
+
+  // Récupérer les attributs du tableau survolé
+  const getTableAttributes = useCallback(() => {
+    const tableInfo = findTableNode();
+    if (!tableInfo) return { hasBorders: true, borderColor: null };
+    return tableInfo.node.attrs;
+  }, [findTableNode]);
+
+  // Mettre à jour un attribut spécifique sur le tableau survolé
+  const updateTableAttribute = useCallback((key: string, value: any) => {
+    const tableInfo = findTableNode();
+    if (!tableInfo) return;
+    
+    const { state, view } = editor;
+    const transaction = state.tr.setNodeAttribute(tableInfo.pos, key, value);
+    view.dispatch(transaction);
+  }, [editor, findTableNode]);
+
+  // Activer / désactiver les bordures du tableau
+  const toggleBorders = useCallback(() => {
+    const attrs = getTableAttributes();
+    const newValue = attrs.hasBorders === false ? true : false;
+    updateTableAttribute("hasBorders", newValue);
+  }, [getTableAttributes, updateTableAttribute]);
+
+  // Changer la couleur de bordure du tableau
+  const setTableBorderColor = useCallback((colorValue: string) => {
+    const color = BORDER_COLORS.find((c) => c.value === colorValue);
+    const cssColor = color && color.cssColor !== "" ? color.cssColor : null;
+    updateTableAttribute("borderColor", cssColor);
+  }, [updateTableAttribute]);
+
+  // Vérifier si la ligne d'en-tête est active (ProseMirror)
+  const checkHeaderRowActive = useCallback(() => {
+    const tableInfo = findTableNode();
+    if (!tableInfo) return false;
+    const { node } = tableInfo;
+    const firstRow = node.firstChild;
+    if (!firstRow || firstRow.type.name !== "tableRow") return false;
+    
+    let allHeaders = true;
+    firstRow.forEach((cell) => {
+      if (cell.type.name !== "tableHeader") {
+        allHeaders = false;
+      }
+    });
+    return allHeaders;
+  }, [findTableNode]);
+
+  // Vérifier si la colonne d'en-tête est active (ProseMirror)
+  const checkHeaderColumnActive = useCallback(() => {
+    const tableInfo = findTableNode();
+    if (!tableInfo) return false;
+    const { node } = tableInfo;
+    
+    let allFirstCellsAreHeaders = true;
+    let rowCount = 0;
+    node.forEach((row) => {
+      if (row.type.name === "tableRow") {
+        rowCount++;
+        const firstCell = row.firstChild;
+        if (!firstCell || firstCell.type.name !== "tableHeader") {
+          allFirstCellsAreHeaders = false;
+        }
+      }
+    });
+    return rowCount > 0 && allFirstCellsAreHeaders;
+  }, [findTableNode]);
 
   /* ─── Early exit ─────────────────────────────────────────────── */
   if (!editor || !hoveredTable || !tableRect || !editorRect) return null;
@@ -958,7 +1062,7 @@ export function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
                 className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left text-xs hover:bg-accent text-foreground/90 cursor-pointer transition-colors"
               >
                 <div className="h-4 w-4 flex items-center justify-center">
-                  {editor.isActive("table", { headerRow: true }) && (
+                  {checkHeaderRowActive() && (
                     <Check className="h-3.5 w-3.5 text-emerald-500" />
                   )}
                 </div>
@@ -973,11 +1077,26 @@ export function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
                 className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left text-xs hover:bg-accent text-foreground/90 cursor-pointer transition-colors"
               >
                 <div className="h-4 w-4 flex items-center justify-center">
-                  {editor.isActive("table", { headerColumn: true }) && (
+                  {checkHeaderColumnActive() && (
                     <Check className="h-3.5 w-3.5 text-emerald-500" />
                   )}
                 </div>
                 <span className="font-medium">Colonne d&apos;en-tête</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  safeExecute(() => toggleBorders());
+                }}
+                className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left text-xs hover:bg-accent text-foreground/90 cursor-pointer transition-colors"
+              >
+                <div className="h-4 w-4 flex items-center justify-center">
+                  {getTableAttributes().hasBorders !== false && (
+                    <Check className="h-3.5 w-3.5 text-emerald-500" />
+                  )}
+                </div>
+                <span className="font-medium">Afficher les bordures</span>
               </button>
             </div>
 
@@ -1001,6 +1120,37 @@ export function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
                     }}
                     title={color.label}
                   />
+                ))}
+              </div>
+            </div>
+
+            <div className="h-[1px] bg-border/30 my-1.5" />
+
+            {/* Couleurs des bordures */}
+            <div className="px-2 py-1.5">
+              <div className="text-[9px] font-extrabold text-muted-foreground/60 uppercase tracking-widest mb-2">
+                Couleur des bordures
+              </div>
+              <div className="grid grid-cols-5 gap-1.5">
+                {BORDER_COLORS.map((color) => (
+                  <button
+                    key={color.value || "default"}
+                    type="button"
+                    onClick={() => {
+                      safeExecute(() => setTableBorderColor(color.value));
+                    }}
+                    className="h-7 rounded-md border hover:border-foreground/40 hover:scale-110 transition-all duration-150 cursor-pointer flex items-center justify-center"
+                    style={{
+                      borderColor: color.cssColor || "hsl(var(--border))",
+                      backgroundColor: "transparent",
+                    }}
+                    title={color.label}
+                  >
+                    <div 
+                      className="h-3.5 w-3.5 rounded-sm"
+                      style={{ backgroundColor: color.cssColor || "hsl(var(--border) / 0.5)" }}
+                    />
+                  </button>
                 ))}
               </div>
             </div>

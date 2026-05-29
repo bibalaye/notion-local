@@ -2,7 +2,7 @@ import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
-import Table from "@tiptap/extension-table";
+import { CustomTable } from "./CustomTable";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import TaskItem from "@tiptap/extension-task-item";
@@ -41,8 +41,8 @@ export const getExtensions = (options?: {
     Youtube.configure({ HTMLAttributes: { class: "rounded-lg" } }),
     TaskList,
     TaskItem.configure({ nested: true }),
-    // Configuration Table avec resizable
-    Table.configure({ 
+    // Configuration Table avec resizable et attributs personnalisés
+    CustomTable.configure({ 
       resizable: true,
       HTMLAttributes: {
         class: "tiptap-table",

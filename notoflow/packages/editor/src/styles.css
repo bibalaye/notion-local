@@ -359,11 +359,11 @@
   font-size: 0.9rem;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid hsl(var(--border));
+  border: 1px solid var(--table-border-color, hsl(var(--border)));
 }
 .notion-editor th,
 .notion-editor td {
-  border: 1px solid hsl(var(--border) / 0.7);
+  border: 1px solid var(--table-border-color, hsl(var(--border) / 0.7));
   padding: 0.5rem 0.75rem;
   text-align: left;
   vertical-align: top;
@@ -382,6 +382,22 @@
 }
 .notion-editor .selectedCell {
   background: hsl(var(--accent) / 0.6) !important;
+}
+
+/* Bordures invisibles/pointillées (Notion-style) */
+.notion-editor table.no-borders,
+.ProseMirror table.no-borders {
+  border-color: transparent !important;
+}
+.notion-editor table.no-borders th,
+.notion-editor table.no-borders td,
+.ProseMirror table.no-borders th,
+.ProseMirror table.no-borders td {
+  border-color: transparent !important;
+}
+.ProseMirror table.no-borders th,
+.ProseMirror table.no-borders td {
+  border: 1px dashed hsl(var(--border) / 0.35) !important;
 }
 
 /* ── Links ───────────────────────────────────────────────────────── */
@@ -472,11 +488,12 @@
   position: relative;
   border-collapse: collapse;
   margin: 1rem 0;
+  border: 1px solid var(--table-border-color, hsl(var(--border)));
 }
 
 .ProseMirror table td,
 .ProseMirror table th {
-  border: 1px solid hsl(var(--border));
+  border: 1px solid var(--table-border-color, hsl(var(--border) / 0.7));
   padding: 0.5rem 0.75rem;
   vertical-align: top;
   position: relative;
